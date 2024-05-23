@@ -21,6 +21,13 @@ struct Sphere {
 };
 
 
+struct Scene {
+    Sphere spheres[MAX_SPHERES];
+    vec3 backgroundColor;
+    int numSpheres;
+};
+
+
 struct Ray {
     vec3 origin;
     vec3 direction;
@@ -39,8 +46,7 @@ struct HitRecord {
 
 uniform vec2 uImageSize;
 uniform Camera camera;
-uniform Sphere spheres[MAX_SPHERES];
-uniform int numSpheres;
+uniform Scene scene;
 
 
 // FUNCTIONS
@@ -88,18 +94,18 @@ void main() {
     record.objectIndex = -1;
     record.hitDistance = FLT_MAX;
 
-    for (int i = 0; i < numSpheres; i++) {
-        bool closer = hitSphere(spheres[i], ray, record);
+    for (int i = 0; i < scene.numSpheres; i++) {
+        bool closer = hitSphere(scene.spheres[i], ray, record);
         if (closer) {
             record.objectIndex = i;
         }
     }
 
     if (record.objectIndex == -1) {
-        gl_FragColor = vec4(0.0, 1.0, 1.0, 1.0);
+        gl_FragColor = vec4(scene.backgroundColor, 1.0);
     } else {
         const vec3 lightDirection = normalize(vec3(-1, -1, -1));
         float lightIntensity = dot(record.worldNormal, -lightDirection);
-        gl_FragColor = vec4(spheres[record.objectIndex].color * lightIntensity, 1.0);
+        gl_FragColor = vec4(scene.spheres[record.objectIndex].color * lightIntensity, 1.0);
     }
 }

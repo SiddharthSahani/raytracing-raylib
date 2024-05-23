@@ -81,33 +81,39 @@ void Renderer::updateShaderSpheres() {
     {
         rl::Vector3 spherePos = {0, 0, 0};
         float sphereRad = 1.0;
-        rl::Vector3 sphereCol = {1, 0, 0};
+        rl::Vector3 sphereCol = {0.2, 0.9, 0.8};
         rl::SetShaderValue(m_raytracingShader,
-                           rl::GetShaderLocation(m_raytracingShader, "spheres[0].position"),
+                           rl::GetShaderLocation(m_raytracingShader, "scene.spheres[0].position"),
                            &spherePos, rl::SHADER_UNIFORM_VEC3);
         rl::SetShaderValue(m_raytracingShader,
-                           rl::GetShaderLocation(m_raytracingShader, "spheres[0].radius"),
+                           rl::GetShaderLocation(m_raytracingShader, "scene.spheres[0].radius"),
                            &sphereRad, rl::SHADER_UNIFORM_FLOAT);
         rl::SetShaderValue(m_raytracingShader,
-                           rl::GetShaderLocation(m_raytracingShader, "spheres[0].color"),
+                           rl::GetShaderLocation(m_raytracingShader, "scene.spheres[0].color"),
                            &sphereCol, rl::SHADER_UNIFORM_VEC3);
     }
     {
         rl::Vector3 spherePos = {0, -4, 0};
         float sphereRad = 3.0;
-        rl::Vector3 sphereCol = {0, 1, 0};
+        rl::Vector3 sphereCol = {1, 0, 1};
         rl::SetShaderValue(m_raytracingShader,
-                           rl::GetShaderLocation(m_raytracingShader, "spheres[1].position"),
+                           rl::GetShaderLocation(m_raytracingShader, "scene.spheres[1].position"),
                            &spherePos, rl::SHADER_UNIFORM_VEC3);
         rl::SetShaderValue(m_raytracingShader,
-                           rl::GetShaderLocation(m_raytracingShader, "spheres[1].radius"),
+                           rl::GetShaderLocation(m_raytracingShader, "scene.spheres[1].radius"),
                            &sphereRad, rl::SHADER_UNIFORM_FLOAT);
         rl::SetShaderValue(m_raytracingShader,
-                           rl::GetShaderLocation(m_raytracingShader, "spheres[1].color"),
+                           rl::GetShaderLocation(m_raytracingShader, "scene.spheres[1].color"),
                            &sphereCol, rl::SHADER_UNIFORM_VEC3);
     }
 
     int numSpheres = 2;
-    rl::SetShaderValue(m_raytracingShader, rl::GetShaderLocation(m_raytracingShader, "numSpheres"),
+    rl::SetShaderValue(m_raytracingShader, rl::GetShaderLocation(m_raytracingShader, "scene.numSpheres"),
                        &numSpheres, rl::SHADER_UNIFORM_INT);
+    
+    rl::Vector3 backgroundColor = {210, 210, 210};
+    backgroundColor = Vector3Divide(backgroundColor, {255, 255, 255});
+    rl::SetShaderValue(m_raytracingShader, rl::GetShaderLocation(m_raytracingShader, "scene.backgroundColor"),
+                       &backgroundColor, rl::SHADER_UNIFORM_VEC3);
+
 }
