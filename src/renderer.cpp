@@ -1,6 +1,9 @@
 
 #include "src/renderer.h"
 
+using namespace rl;
+#include <raylib/raymath.h>
+
 
 Renderer::Renderer(rl::Vector2 windowSize, rl::Vector2 imageSize)
     : m_windowSize(windowSize), m_imageSize(imageSize) {
@@ -20,8 +23,24 @@ Renderer::~Renderer() {
 
 
 void Renderer::loop() {
+    rl::Vector3 position = {0, 0, 6};
+    rl::Vector3 direction = {0, 0, -1};
+
+    rl::Matrix viewMat = MatrixLookAt(position, Vector3Add(position, direction), {0, 1, 0});
+    rl::Matrix invViewMat = MatrixInvert(viewMat);
+
+    rl::Matrix projMat =
+        MatrixPerspective(60.0 * DEG2RAD, m_imageSize.x / m_imageSize.y, 0.1, 100.0);
+    rl::Matrix invProjMat = MatrixInvert(projMat);
+
     rl::SetShaderValue(m_raytracingShader, rl::GetShaderLocation(m_raytracingShader, "uImageSize"),
                        &m_imageSize, rl::SHADER_UNIFORM_VEC2);
+    rl::SetShaderValueMatrix(m_raytracingShader,
+                             rl::GetShaderLocation(m_raytracingShader, "uInvViewMat"), invViewMat);
+    rl::SetShaderValueMatrix(m_raytracingShader,
+                             rl::GetShaderLocation(m_raytracingShader, "uInvProjMat"), invProjMat);
+    rl::SetShaderValue(m_raytracingShader, rl::GetShaderLocation(m_raytracingShader, "uCameraPos"),
+                       &position, rl::SHADER_UNIFORM_VEC3);
 
     while (!rl::WindowShouldClose()) {
         runShader();
