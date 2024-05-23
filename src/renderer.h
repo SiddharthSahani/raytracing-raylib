@@ -17,6 +17,7 @@ public:
 private:
     void runShader();
     void updateShaderCamera();
+    void updateShaderSpheres();
 
 private:
     rl::Vector2 m_windowSize;

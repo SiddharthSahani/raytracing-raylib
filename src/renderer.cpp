@@ -24,6 +24,7 @@ Renderer::~Renderer() {
 
 void Renderer::loop() {
     updateShaderCamera();
+    updateShaderSpheres();
 
     while (!rl::WindowShouldClose()) {
         runShader();
@@ -73,4 +74,32 @@ void Renderer::updateShaderCamera() {
     rl::SetShaderValue(m_raytracingShader,
                        rl::GetShaderLocation(m_raytracingShader, "camera.position"), &position,
                        rl::SHADER_UNIFORM_VEC3);
+}
+
+
+void Renderer::updateShaderSpheres() {
+    {
+        rl::Vector3 spherePos = {0, 0, 0};
+        float sphereRad = 1.0;
+        rl::SetShaderValue(m_raytracingShader,
+                           rl::GetShaderLocation(m_raytracingShader, "spheres[0].position"),
+                           &spherePos, rl::SHADER_UNIFORM_VEC3);
+        rl::SetShaderValue(m_raytracingShader,
+                           rl::GetShaderLocation(m_raytracingShader, "spheres[0].radius"),
+                           &sphereRad, rl::SHADER_UNIFORM_FLOAT);
+    }
+    {
+        rl::Vector3 spherePos = {0, -4, 0};
+        float sphereRad = 3.0;
+        rl::SetShaderValue(m_raytracingShader,
+                           rl::GetShaderLocation(m_raytracingShader, "spheres[1].position"),
+                           &spherePos, rl::SHADER_UNIFORM_VEC3);
+        rl::SetShaderValue(m_raytracingShader,
+                           rl::GetShaderLocation(m_raytracingShader, "spheres[1].radius"),
+                           &sphereRad, rl::SHADER_UNIFORM_FLOAT);
+    }
+
+    int numSpheres = 2;
+    rl::SetShaderValue(m_raytracingShader, rl::GetShaderLocation(m_raytracingShader, "numSpheres"),
+                       &numSpheres, rl::SHADER_UNIFORM_INT);
 }

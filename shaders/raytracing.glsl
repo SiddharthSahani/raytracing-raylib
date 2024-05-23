@@ -2,6 +2,7 @@
 #version 330 core
 
 #define FLT_MAX 3.402823466e+38F
+#define MAX_SPHERES 10
 
 
 struct Camera {
@@ -11,19 +12,21 @@ struct Camera {
 };
 
 
+struct Sphere {
+    vec3 position;
+    float radius;
+};
+
+
 uniform vec2 uImageSize;
 uniform Camera camera;
+uniform Sphere spheres[MAX_SPHERES];
+uniform int numSpheres;
 
 
 struct Ray {
     vec3 origin;
     vec3 direction;
-};
-
-
-struct Sphere {
-    vec3 position;
-    float radius;
 };
 
 
@@ -66,15 +69,11 @@ void hitSphere(Sphere sphere, Ray ray, out HitRecord record) {
 
 void main() {
     Ray ray = genRay();
-    Sphere spheres[] = {
-        Sphere(vec3(0.0, 0.0, 0.0), 1.0),
-        Sphere(vec3(0.0, -4.0, 0.0), 3.0)
-    };
 
     HitRecord record;
     record.hitDistance = FLT_MAX;
 
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < numSpheres; i++) {
         hitSphere(spheres[i], ray, record);
     }
 
