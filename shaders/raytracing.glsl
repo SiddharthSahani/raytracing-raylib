@@ -61,12 +61,17 @@ void hitSphere(Sphere sphere, Ray ray, out HitRecord record) {
 
 void main() {
     Ray ray = genRay();
-    Sphere sphere = Sphere(vec3(0.0, 0.0, 0.0), 1.0);
+    Sphere spheres[] = {
+        Sphere(vec3(0.0, 0.0, 0.0), 1.0),
+        Sphere(vec3(0.0, -4.0, 0.0), 3.0)
+    };
 
     HitRecord record;
     record.hitDistance = FLT_MAX;
 
-    hitSphere(sphere, ray, record);
+    for (int i = 0; i < 2; i++) {
+        hitSphere(spheres[i], ray, record);
+    }
 
     if (record.hitDistance == FLT_MAX) {
         gl_FragColor = vec4(0.0, 1.0, 1.0, 1.0);

@@ -48,7 +48,7 @@ void Renderer::loop() {
         rl::BeginDrawing();
 
         rl::DrawTexturePro(m_renderTexture.texture, {0, 0, m_imageSize.x, m_imageSize.y},
-                           {0, 0, m_windowSize.x, m_windowSize.y}, {0, 0}, 0, rl::WHITE);
+                           {m_windowSize.x, m_windowSize.y, m_windowSize.x, m_windowSize.y}, {0, 0}, 180, rl::WHITE);
 
         rl::DrawFPS(10, 10);
         rl::EndDrawing();
