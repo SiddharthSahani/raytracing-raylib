@@ -23,24 +23,7 @@ Renderer::~Renderer() {
 
 
 void Renderer::loop() {
-    rl::Vector3 position = {0, 0, 6};
-    rl::Vector3 direction = {0, 0, -1};
-
-    rl::Matrix viewMat = MatrixLookAt(position, Vector3Add(position, direction), {0, 1, 0});
-    rl::Matrix invViewMat = MatrixInvert(viewMat);
-
-    rl::Matrix projMat =
-        MatrixPerspective(60.0 * DEG2RAD, m_imageSize.x / m_imageSize.y, 0.1, 100.0);
-    rl::Matrix invProjMat = MatrixInvert(projMat);
-
-    rl::SetShaderValue(m_raytracingShader, rl::GetShaderLocation(m_raytracingShader, "uImageSize"),
-                       &m_imageSize, rl::SHADER_UNIFORM_VEC2);
-    rl::SetShaderValueMatrix(m_raytracingShader,
-                             rl::GetShaderLocation(m_raytracingShader, "uInvViewMat"), invViewMat);
-    rl::SetShaderValueMatrix(m_raytracingShader,
-                             rl::GetShaderLocation(m_raytracingShader, "uInvProjMat"), invProjMat);
-    rl::SetShaderValue(m_raytracingShader, rl::GetShaderLocation(m_raytracingShader, "uCameraPos"),
-                       &position, rl::SHADER_UNIFORM_VEC3);
+    updateShaderCamera();
 
     while (!rl::WindowShouldClose()) {
         runShader();
@@ -48,7 +31,8 @@ void Renderer::loop() {
         rl::BeginDrawing();
 
         rl::DrawTexturePro(m_renderTexture.texture, {0, 0, m_imageSize.x, m_imageSize.y},
-                           {m_windowSize.x, m_windowSize.y, m_windowSize.x, m_windowSize.y}, {0, 0}, 180, rl::WHITE);
+                           {m_windowSize.x, m_windowSize.y, m_windowSize.x, m_windowSize.y}, {0, 0},
+                           180, rl::WHITE);
 
         rl::DrawFPS(10, 10);
         rl::EndDrawing();
@@ -64,4 +48,29 @@ void Renderer::runShader() {
     rl::EndShaderMode();
 
     rl::EndTextureMode();
+}
+
+
+void Renderer::updateShaderCamera() {
+    rl::Vector3 position = {0, 0, 6};
+    rl::Vector3 direction = {0, 0, -1};
+
+    rl::Matrix viewMat = MatrixLookAt(position, Vector3Add(position, direction), {0, 1, 0});
+    rl::Matrix invViewMat = MatrixInvert(viewMat);
+
+    rl::Matrix projMat =
+        MatrixPerspective(60.0 * DEG2RAD, m_imageSize.x / m_imageSize.y, 0.1, 100.0);
+    rl::Matrix invProjMat = MatrixInvert(projMat);
+
+    rl::SetShaderValue(m_raytracingShader, rl::GetShaderLocation(m_raytracingShader, "uImageSize"),
+                       &m_imageSize, rl::SHADER_UNIFORM_VEC2);
+    rl::SetShaderValueMatrix(m_raytracingShader,
+                             rl::GetShaderLocation(m_raytracingShader, "camera.invViewMat"),
+                             invViewMat);
+    rl::SetShaderValueMatrix(m_raytracingShader,
+                             rl::GetShaderLocation(m_raytracingShader, "camera.invProjMat"),
+                             invProjMat);
+    rl::SetShaderValue(m_raytracingShader,
+                       rl::GetShaderLocation(m_raytracingShader, "camera.position"), &position,
+                       rl::SHADER_UNIFORM_VEC3);
 }

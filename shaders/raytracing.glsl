@@ -4,10 +4,15 @@
 #define FLT_MAX 3.402823466e+38F
 
 
+struct Camera {
+    mat4 invProjMat;
+    mat4 invViewMat;
+    vec3 position;
+};
+
+
 uniform vec2 uImageSize;
-uniform mat4 uInvViewMat;
-uniform mat4 uInvProjMat;
-uniform vec3 uCameraPos;
+uniform Camera camera;
 
 
 struct Ray {
@@ -31,10 +36,10 @@ struct HitRecord {
 
 Ray genRay() {
     vec2 coord = gl_FragCoord.xy / uImageSize * 2.0 - 1.0;
-    vec4 target = uInvProjMat * vec4(coord, 1.0, 1.0);
-    vec4 rayDirection = uInvViewMat * vec4(normalize(target.xyz / target.w), 0.0);
+    vec4 target = camera.invProjMat * vec4(coord, 1.0, 1.0);
+    vec4 rayDirection = camera.invViewMat * vec4(normalize(target.xyz / target.w), 0.0);
 
-    return Ray(uCameraPos, rayDirection.xyz);
+    return Ray(camera.position, rayDirection.xyz);
 }
 
 
