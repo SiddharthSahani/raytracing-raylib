@@ -15,6 +15,7 @@ struct Camera {
 struct Sphere {
     vec3 position;
     float radius;
+    vec3 color;
 };
 
 
@@ -34,6 +35,7 @@ struct HitRecord {
     vec3 worldPosition;
     vec3 worldNormal;
     float hitDistance;
+    int objectIndex;
 };
 
 
@@ -46,7 +48,7 @@ Ray genRay() {
 }
 
 
-void hitSphere(Sphere sphere, Ray ray, out HitRecord record) {
+bool hitSphere(Sphere sphere, Ray ray, out HitRecord record) {
     vec3 oc = ray.origin - sphere.position;
     float a = dot(ray.direction, ray.direction);
     float b = 2.0 * dot(oc, ray.direction);
@@ -54,7 +56,7 @@ void hitSphere(Sphere sphere, Ray ray, out HitRecord record) {
     float d = b * b - 4 * a * c;
 
     if (d < 0.0f) {
-        return;
+        return false;
     }
 
     float t = (-b - sqrt(d)) / (2.0 * a);
@@ -63,7 +65,10 @@ void hitSphere(Sphere sphere, Ray ray, out HitRecord record) {
         record.worldPosition = ray.origin + ray.direction * t;
         record.worldNormal = normalize(record.worldPosition - sphere.position);
         record.hitDistance = t;
+        return true;
     }
+
+    return false;
 }
 
 
@@ -71,15 +76,21 @@ void main() {
     Ray ray = genRay();
 
     HitRecord record;
+    record.objectIndex = -1;
     record.hitDistance = FLT_MAX;
 
     for (int i = 0; i < numSpheres; i++) {
-        hitSphere(spheres[i], ray, record);
+        bool closer = hitSphere(spheres[i], ray, record);
+        if (closer) {
+            record.objectIndex = i;
+        }
     }
 
-    if (record.hitDistance == FLT_MAX) {
+    if (record.objectIndex == -1) {
         gl_FragColor = vec4(0.0, 1.0, 1.0, 1.0);
     } else {
-        gl_FragColor = vec4(record.worldNormal, 1.0);
+        const vec3 lightDirection = normalize(vec3(-1, -1, -1));
+        float lightIntensity = dot(record.worldNormal, -lightDirection);
+        gl_FragColor = vec4(spheres[record.objectIndex].color * lightIntensity, 1.0);
     }
 }

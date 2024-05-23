@@ -81,22 +81,30 @@ void Renderer::updateShaderSpheres() {
     {
         rl::Vector3 spherePos = {0, 0, 0};
         float sphereRad = 1.0;
+        rl::Vector3 sphereCol = {1, 0, 0};
         rl::SetShaderValue(m_raytracingShader,
                            rl::GetShaderLocation(m_raytracingShader, "spheres[0].position"),
                            &spherePos, rl::SHADER_UNIFORM_VEC3);
         rl::SetShaderValue(m_raytracingShader,
                            rl::GetShaderLocation(m_raytracingShader, "spheres[0].radius"),
                            &sphereRad, rl::SHADER_UNIFORM_FLOAT);
+        rl::SetShaderValue(m_raytracingShader,
+                           rl::GetShaderLocation(m_raytracingShader, "spheres[0].color"),
+                           &sphereCol, rl::SHADER_UNIFORM_VEC3);
     }
     {
         rl::Vector3 spherePos = {0, -4, 0};
         float sphereRad = 3.0;
+        rl::Vector3 sphereCol = {0, 1, 0};
         rl::SetShaderValue(m_raytracingShader,
                            rl::GetShaderLocation(m_raytracingShader, "spheres[1].position"),
                            &spherePos, rl::SHADER_UNIFORM_VEC3);
         rl::SetShaderValue(m_raytracingShader,
                            rl::GetShaderLocation(m_raytracingShader, "spheres[1].radius"),
                            &sphereRad, rl::SHADER_UNIFORM_FLOAT);
+        rl::SetShaderValue(m_raytracingShader,
+                           rl::GetShaderLocation(m_raytracingShader, "spheres[1].color"),
+                           &sphereCol, rl::SHADER_UNIFORM_VEC3);
     }
 
     int numSpheres = 2;
