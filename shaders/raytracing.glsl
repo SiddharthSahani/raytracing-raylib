@@ -5,6 +5,8 @@
 #define MAX_SPHERES 10
 
 
+// STRUCT DEFINITIONS
+
 struct Camera {
     mat4 invProjMat;
     mat4 invViewMat;
@@ -17,12 +19,6 @@ struct Sphere {
     float radius;
     vec3 color;
 };
-
-
-uniform vec2 uImageSize;
-uniform Camera camera;
-uniform Sphere spheres[MAX_SPHERES];
-uniform int numSpheres;
 
 
 struct Ray {
@@ -39,6 +35,17 @@ struct HitRecord {
 };
 
 
+// UNIFORM VAIABLES
+
+uniform vec2 uImageSize;
+uniform Camera camera;
+uniform Sphere spheres[MAX_SPHERES];
+uniform int numSpheres;
+
+
+// FUNCTIONS
+
+// Initializes a Ray based on current fragCoord
 Ray genRay() {
     vec2 coord = gl_FragCoord.xy / uImageSize * 2.0 - 1.0;
     vec4 target = camera.invProjMat * vec4(coord, 1.0, 1.0);
@@ -48,6 +55,8 @@ Ray genRay() {
 }
 
 
+// Ray-Sphere intersection function
+// Modifies HitRecord and returns true if current object is closer
 bool hitSphere(Sphere sphere, Ray ray, out HitRecord record) {
     vec3 oc = ray.origin - sphere.position;
     float a = dot(ray.direction, ray.direction);
