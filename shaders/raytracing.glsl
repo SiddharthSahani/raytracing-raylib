@@ -76,7 +76,7 @@ bool hitSphere(Sphere sphere, Ray ray, out HitRecord record) {
 
     float t = (-b - sqrt(d)) / (2.0 * a);
 
-    if (t < record.hitDistance) {
+    if (t > 0.0 && t < record.hitDistance) {
         record.worldPosition = ray.origin + ray.direction * t;
         record.worldNormal = normalize(record.worldPosition - sphere.position);
         record.hitDistance = t;
@@ -87,9 +87,8 @@ bool hitSphere(Sphere sphere, Ray ray, out HitRecord record) {
 }
 
 
-void main() {
-    Ray ray = genRay();
-
+// Single ray path
+HitRecord traceRay(Ray ray) {
     HitRecord record;
     record.objectIndex = -1;
     record.hitDistance = FLT_MAX;
@@ -101,11 +100,35 @@ void main() {
         }
     }
 
-    if (record.objectIndex == -1) {
-        gl_FragColor = vec4(scene.backgroundColor, 1.0);
-    } else {
-        const vec3 lightDirection = normalize(vec3(-1, -1, -1));
-        float lightIntensity = dot(record.worldNormal, -lightDirection);
-        gl_FragColor = vec4(scene.spheres[record.objectIndex].color * lightIntensity, 1.0);
+    return record;
+}
+
+
+// Traces the pixel ray (bounces included)
+vec3 getPixelColor() {
+    Ray ray = genRay();
+    vec3 light = vec3(0.0, 0.0, 0.0);
+    vec3 contribution = vec3(1.0, 1.0, 1.0);
+
+    for (float i = 0; i < 5; i++) {
+        HitRecord record = traceRay(ray);
+
+        if (record.hitDistance == FLT_MAX) {
+            light += scene.backgroundColor * contribution;
+            break;
+        }
+
+        contribution *= scene.spheres[record.objectIndex].color;
+
+        ray.origin = record.worldPosition + record.worldNormal * 0.001;
+        ray.direction = reflect(ray.direction, record.worldNormal);
     }
+
+    return light;
+}
+
+
+void main() {
+    vec3 color = getPixelColor();
+    gl_FragColor = vec4(color, 1.0);
 }
