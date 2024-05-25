@@ -6,14 +6,14 @@ using namespace rl;
 #include <raylib/rlgl.h>
 
 
-Renderer::Renderer(rl::Vector2 windowSize, rl::Vector2 imageSize)
-    : m_windowSize(windowSize), m_imageSize(imageSize) {
+Renderer::Renderer(rl::Vector2 windowSize, rl::Vector2 imageSize, unsigned computeLocalSize)
+    : m_windowSize(windowSize), m_imageSize(imageSize), m_computeLocalSize(computeLocalSize) {
     rl::InitWindow(m_windowSize.x, m_windowSize.y, "Raytracing");
     rl::SetTargetFPS(30);
 
     makeOutputTexture();
     makeBufferObjects();
-    compileComputShader();
+    compileComputeShader();
 }
 
 
@@ -52,11 +52,13 @@ void Renderer::makeBufferObjects() {
 }
 
 
-void Renderer::compileComputShader() {
+void Renderer::compileComputeShader() {
     char* fileText = rl::LoadFileText("shaders/raytracer.glsl");
-    unsigned shaderId = rlCompileShader(fileText, RL_COMPUTE_SHADER);
-    m_computeShaderProgram = rlLoadComputeShaderProgram(shaderId);
+    char* newfileText = rl::TextReplace(fileText, "WG_SIZE_PLACEHOLDER", rl::TextFormat("%d", m_computeLocalSize));
     rl::UnloadFileText(fileText);
+    unsigned shaderId = rlCompileShader(newfileText, RL_COMPUTE_SHADER);
+    m_computeShaderProgram = rlLoadComputeShaderProgram(shaderId);
+    rl::UnloadFileText(newfileText);
 }
 
 
@@ -68,7 +70,9 @@ void Renderer::runComputeShader() {
     rlBindShaderBuffer(m_buffer, 1);
 
     rlEnableShader(m_computeShaderProgram);
-    rlComputeShaderDispatch(m_imageSize.x, m_imageSize.y, 1);
+    const int groupX = m_imageSize.x / m_computeLocalSize;
+    const int groupY = m_imageSize.y / m_computeLocalSize;
+    rlComputeShaderDispatch(groupX, groupY, 1);
     rlDisableShader();
 }
 
