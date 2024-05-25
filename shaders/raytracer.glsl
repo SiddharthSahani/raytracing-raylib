@@ -10,11 +10,53 @@ layout (std430, binding = 1) readonly buffer uniforms {
 };
 
 
-void main() {
-    ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
-    vec3 color = vec3(0.0, 0.0, 0.0);
-    color.rg = vec2(coord) / imageSize(outputImage);
-    color.b = abs(sin(color.r + iTime));
+struct Camera {
+    vec3 position;
+    vec3 direction;
+};
 
-    imageStore(outputImage, coord, vec4(color, 1.0));
+
+struct Ray {
+    vec3 origin;
+    vec3 direction;
+};
+
+
+struct Sphere {
+    vec3 position;
+    float radius;
+};
+
+
+void main() {
+    ivec2 pixelCoord = ivec2(gl_GlobalInvocationID.xy);
+    vec2 imgSize = imageSize(outputImage);
+    float horizontalCoeff = (pixelCoord.x * 2.0 - imgSize.x) / imgSize.x;
+    float verticalCoeff = (pixelCoord.y * 2.0 - imgSize.y) / imgSize.x;
+
+    Camera camera;
+    camera.position = vec3(0.0, 0.0, 6.0);
+    camera.direction = vec3(0.0, 0.0, -1.0);
+
+    vec3 upDirection = vec3(0.0, 1.0, 0.0);
+    vec3 rightDirection = cross(camera.direction, upDirection);
+    Ray ray;
+    ray.origin = camera.position;
+    ray.direction = camera.direction + horizontalCoeff * rightDirection + verticalCoeff * upDirection;
+
+    Sphere sphere;
+    sphere.position = vec3(0.0, 0.0, 0.0);
+    sphere.radius = 1.0;
+
+    vec3 oc = ray.origin - sphere.position;
+    float a = dot(ray.direction, ray.direction);
+    float b = 2.0 * dot(oc, ray.direction);
+    float c = dot(oc, oc) - sphere.radius * sphere.radius;
+    float d = b * b - 4 * a * c;
+
+    if (d > 0.0) {
+        imageStore(outputImage, pixelCoord, vec4(1.0, 0.0, 0.0, 1.0));
+    } else {
+        imageStore(outputImage, pixelCoord, vec4(0.0, 0.0, 1.0, 1.0));
+    }
 }
