@@ -15,13 +15,17 @@ public:
     void loop();
 
 private:
-    void runShader();
-    void updateShaderCamera();
-    void updateShaderSpheres();
+    void makeOutputTexture();
+    void makeBufferObjects();
+    void compileComputShader();
+    void runComputeShader();
+    // void updateShaderCamera();
+    // void updateShaderSpheres();
 
 private:
     rl::Vector2 m_windowSize;
     rl::Vector2 m_imageSize;
-    rl::Shader m_raytracingShader;
-    rl::RenderTexture m_renderTexture;
+    rl::Texture m_outputTexture;
+    unsigned m_computeShaderProgram;
+    unsigned m_buffer;
 };
