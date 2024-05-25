@@ -42,6 +42,12 @@ void Renderer::loop() {
 
 
 void Renderer::runShader() {
+    static int shaderLocation_frameNum = rl::GetShaderLocation(m_raytracingShader, "frameNum");
+    static int frameNum = 0;
+    frameNum += 1;
+    rl::SetShaderValue(m_raytracingShader, shaderLocation_frameNum, &frameNum,
+                       rl::SHADER_UNIFORM_INT);
+
     rl::BeginTextureMode(m_renderTexture);
 
     rl::BeginShaderMode(m_raytracingShader);
@@ -108,12 +114,13 @@ void Renderer::updateShaderSpheres() {
     }
 
     int numSpheres = 2;
-    rl::SetShaderValue(m_raytracingShader, rl::GetShaderLocation(m_raytracingShader, "scene.numSpheres"),
-                       &numSpheres, rl::SHADER_UNIFORM_INT);
-    
+    rl::SetShaderValue(m_raytracingShader,
+                       rl::GetShaderLocation(m_raytracingShader, "scene.numSpheres"), &numSpheres,
+                       rl::SHADER_UNIFORM_INT);
+
     rl::Vector3 backgroundColor = {210, 210, 210};
     backgroundColor = Vector3Divide(backgroundColor, {255, 255, 255});
-    rl::SetShaderValue(m_raytracingShader, rl::GetShaderLocation(m_raytracingShader, "scene.backgroundColor"),
+    rl::SetShaderValue(m_raytracingShader,
+                       rl::GetShaderLocation(m_raytracingShader, "scene.backgroundColor"),
                        &backgroundColor, rl::SHADER_UNIFORM_VEC3);
-
 }

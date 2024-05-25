@@ -47,9 +47,36 @@ struct HitRecord {
 uniform vec2 uImageSize;
 uniform Camera camera;
 uniform Scene scene;
+uniform int frameNum;
+
+// UTIL FUNCTIONS
+
+// PCG www.shadertoy.com/view/XlGcRh
+uint nextRandom(inout uint state) {
+    state = state * 747796405u + 2891336453u;
+    uint result = ((state >> ((state >> 28) + 4u)) ^ state) * 277803737u;
+    result = (result >> 22) ^ result;
+    return result;
+}
 
 
-// FUNCTIONS
+// PCG but for float
+float randomValue(inout uint state) {
+    return nextRandom(state) / 4294967295.0;
+}
+
+
+// Random direction generator
+vec3 randomDirection(inout uint state) {
+    return normalize(vec3(
+        randomValue(state),
+        randomValue(state),
+        randomValue(state)
+    ) * 2 - 1);
+}
+
+
+// MAIN FUNCTIONS
 
 // Initializes a Ray based on current fragCoord
 Ray genRay() {
@@ -105,7 +132,7 @@ HitRecord traceRay(Ray ray) {
 
 
 // Traces the pixel ray (bounces included)
-vec3 getPixelColor() {
+vec3 getPixelColor(inout uint rngState) {
     Ray ray = genRay();
     vec3 light = vec3(0.0, 0.0, 0.0);
     vec3 contribution = vec3(1.0, 1.0, 1.0);
@@ -121,7 +148,8 @@ vec3 getPixelColor() {
         contribution *= scene.spheres[record.objectIndex].color;
 
         ray.origin = record.worldPosition + record.worldNormal * 0.001;
-        ray.direction = reflect(ray.direction, record.worldNormal);
+        // ray.direction = reflect(ray.direction, record.worldNormal);
+        ray.direction = normalize(record.worldNormal + randomDirection(rngState));
     }
 
     return light;
@@ -129,6 +157,10 @@ vec3 getPixelColor() {
 
 
 void main() {
-    vec3 color = getPixelColor();
-    gl_FragColor = vec4(color, 1.0);
+    uint rngState = uint(gl_FragCoord.x * gl_FragCoord.y) + uint(frameNum) * 32412u;
+    vec3 color = vec3(0.0, 0.0, 0.0);
+    for (int i = 0; i < 64; i++) {
+        color += getPixelColor(rngState);
+    }
+    gl_FragColor = vec4(color / 64, 1.0);
 }
