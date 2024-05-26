@@ -15,7 +15,7 @@ public:
     void loop();
 
 private:
-    void makeOutputTexture();
+    void makeImage();
     void makeBufferObjects();
     void compileComputeShader();
     void runComputeShader();
@@ -27,6 +27,6 @@ private:
     rl::Vector2 m_windowSize;
     rl::Vector2 m_imageSize;
     unsigned m_computeLocalSize;
-    rl::Texture m_outputTexture;
+    rl::Texture m_outImage;
     unsigned m_computeShaderProgram;
 };

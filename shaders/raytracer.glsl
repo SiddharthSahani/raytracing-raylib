@@ -50,7 +50,7 @@ struct Config {
 
 // ----- UNIFORMS AND BUFFERS -----
 
-layout (rgba32f, binding = 0) uniform image2D outputImage;
+layout (rgba32f, binding = 0) uniform image2D outImage;
 uniform Camera camera;
 uniform Scene scene;
 uniform Config config;
@@ -111,7 +111,7 @@ bool hitSphere(Sphere sphere, Ray ray, out HitRecord record) {
 // ----- MAIN FUNCTIONS -----
 
 Ray genRay() {
-    vec2 imgSize = imageSize(outputImage);
+    vec2 imgSize = imageSize(outImage);
     vec2 coefficients = (gl_GlobalInvocationID.xy * 2.0 - imgSize) / imgSize.x;
 
     vec3 upDirection = vec3(0.0, 1.0, 0.0);
@@ -167,9 +167,14 @@ void main() {
     ivec2 pixelCoord = ivec2(gl_GlobalInvocationID.xy);
     uint rngState = pixelCoord.x * pixelCoord.y + uint(frameIndex) * 32421u;
 
-    vec3 color = vec3(0.0, 0.0, 0.0);
+    vec3 frameColor = vec3(0.0, 0.0, 0.0);
     for (float i = 0; i < config.numSamples; i++) {
-        color += perPixel(rngState);
+        frameColor += perPixel(rngState);
     }
-    imageStore(outputImage, pixelCoord, vec4(color/config.numSamples, 1.0));
+    frameColor /= config.numSamples;
+
+    vec3 accumColor = imageLoad(outImage, pixelCoord).rgb;
+
+    vec3 avgColor = (accumColor * (frameIndex-1) + frameColor) / frameIndex;
+    imageStore(outImage, pixelCoord, vec4(avgColor, 1.0));
 }

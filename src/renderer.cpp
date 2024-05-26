@@ -10,7 +10,7 @@ Renderer::Renderer(rl::Vector2 windowSize, rl::Vector2 imageSize, unsigned compu
     rl::InitWindow(m_windowSize.x, m_windowSize.y, "Raytracing");
     rl::SetTargetFPS(30);
 
-    makeOutputTexture();
+    makeImage();
     makeBufferObjects();
     compileComputeShader();
 }
@@ -18,7 +18,7 @@ Renderer::Renderer(rl::Vector2 windowSize, rl::Vector2 imageSize, unsigned compu
 
 Renderer::~Renderer() {
     rlUnloadShaderProgram(m_computeShaderProgram);
-    rl::UnloadTexture(m_outputTexture);
+    rl::UnloadTexture(m_outImage);
     rl::CloseWindow();
 }
 
@@ -30,7 +30,9 @@ void Renderer::loop() {
     updateShaderConfig();
 
     static int frameIndex = 0;
-    unsigned uniformLocation_frameIndex = rlGetLocationUniform(m_computeShaderProgram, "frameIndex");
+
+    unsigned uniformLocation_frameIndex =
+        rlGetLocationUniform(m_computeShaderProgram, "frameIndex");
 
     while (!rl::WindowShouldClose()) {
         frameIndex += 1;
@@ -42,7 +44,7 @@ void Renderer::loop() {
 
         rl::BeginDrawing();
 
-        rl::DrawTexturePro(m_outputTexture, {0, 0, m_imageSize.x, m_imageSize.y},
+        rl::DrawTexturePro(m_outImage, {0, 0, m_imageSize.x, m_imageSize.y},
                            {0, 0, m_windowSize.x, m_windowSize.y}, {0, 0}, 0, rl::WHITE);
 
         rl::DrawFPS(10, 10);
@@ -51,16 +53,15 @@ void Renderer::loop() {
 }
 
 
-void Renderer::makeOutputTexture() {
-    rl::Image image = rl::GenImageColor(m_imageSize.x, m_imageSize.y, rl::GREEN);
+void Renderer::makeImage() {
+    rl::Image image = rl::GenImageColor(m_imageSize.x, m_imageSize.y, rl::BLUE);
     rl::ImageFormat(&image, RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32);
-    m_outputTexture = rl::LoadTextureFromImage(image);
+    m_outImage = rl::LoadTextureFromImage(image);
     rl::UnloadImage(image);
 }
 
 
-void Renderer::makeBufferObjects() {
-}
+void Renderer::makeBufferObjects() {}
 
 
 void Renderer::compileComputeShader() {
@@ -75,10 +76,10 @@ void Renderer::compileComputeShader() {
 
 
 void Renderer::runComputeShader() {
-    rlBindImageTexture(m_outputTexture.id, 0, RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32, false);
-
     const int groupX = m_imageSize.x / m_computeLocalSize;
     const int groupY = m_imageSize.y / m_computeLocalSize;
+
+    rlBindImageTexture(m_outImage.id, 0, RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32, false);
     rlComputeShaderDispatch(groupX, groupY, 1);
 }
 
@@ -126,7 +127,8 @@ void Renderer::updateShaderSpheres() {
     //     rl::Vector3 spherePos = {0, 0, 0};
     //     float sphereRad = 1.0;
     //     rl::Vector3 sphereCol = {0.2, 0.9, 0.8};
-    //     rlSetUniform(rlGetLocationUniform(m_computeShaderProgram, "scene.spheres[0].position"),
+    //     rlSetUniform(rlGetLocationUniform(m_computeShaderProgram,
+    //     "scene.spheres[0].position"),
     //                  &spherePos, RL_SHADER_UNIFORM_VEC3, 1);
     //     rlSetUniform(rlGetLocationUniform(m_computeShaderProgram, "scene.spheres[0].radius"),
     //                  &sphereRad, RL_SHADER_UNIFORM_FLOAT, 1);
@@ -137,7 +139,8 @@ void Renderer::updateShaderSpheres() {
     //     rl::Vector3 spherePos = {0, -4, 0};
     //     float sphereRad = 3.0;
     //     rl::Vector3 sphereCol = {1, 0, 1};
-    //     rlSetUniform(rlGetLocationUniform(m_computeShaderProgram, "scene.spheres[1].position"),
+    //     rlSetUniform(rlGetLocationUniform(m_computeShaderProgram,
+    //     "scene.spheres[1].position"),
     //                  &spherePos, RL_SHADER_UNIFORM_VEC3, 1);
     //     rlSetUniform(rlGetLocationUniform(m_computeShaderProgram, "scene.spheres[1].radius"),
     //                  &sphereRad, RL_SHADER_UNIFORM_FLOAT, 1);
