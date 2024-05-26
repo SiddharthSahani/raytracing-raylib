@@ -42,11 +42,18 @@ struct Scene {
 };
 
 
+struct Config {
+    float bounceLimit;
+    float numSamples;
+};
+
+
 // ----- UNIFORMS AND BUFFERS -----
 
 layout (rgba32f, binding = 0) uniform image2D outputImage;
 uniform Camera camera;
 uniform Scene scene;
+uniform Config config;
 
 
 // ----- RNG FUNCTIONS -----
@@ -136,7 +143,7 @@ vec3 perPixel(inout uint rngState) {
     vec3 light = vec3(0.0, 0.0, 0.0);
     vec3 contribution = vec3(1.0, 1.0, 1.0);
 
-    for (float i = 0; i < 5; i++) {
+    for (float i = 0; i < config.bounceLimit; i++) {
         HitRecord record = traceRay(ray);
 
         if (record.hitDistance == FLT_MAX) {
@@ -160,8 +167,8 @@ void main() {
     uint rngState = pixelCoord.x * pixelCoord.y;
 
     vec3 color = vec3(0.0, 0.0, 0.0);
-    for (int i = 0; i < 16; i++) {
+    for (float i = 0; i < config.numSamples; i++) {
         color += perPixel(rngState);
     }
-    imageStore(outputImage, pixelCoord, vec4(color/16.0, 1.0));
+    imageStore(outputImage, pixelCoord, vec4(color/config.numSamples, 1.0));
 }

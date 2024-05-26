@@ -27,6 +27,7 @@ void Renderer::loop() {
     rlEnableShader(m_computeShaderProgram);
     updateShaderCamera();
     updateShaderSpheres();
+    updateShaderConfig();
 
     while (!rl::WindowShouldClose()) {
         runComputeShader();
@@ -109,11 +110,14 @@ void Renderer::updateShaderSpheres() {
             rl::GetRandomValue(0, 10000) / 10000.0f,
             rl::GetRandomValue(0, 10000) / 10000.0f,
         };
-        rlSetUniform(rlGetLocationUniform(m_computeShaderProgram, rl::TextFormat("scene.spheres[%d].position", i)),
+        rlSetUniform(rlGetLocationUniform(m_computeShaderProgram,
+                                          rl::TextFormat("scene.spheres[%d].position", i)),
                      &pos, RL_SHADER_UNIFORM_VEC3, 1);
-        rlSetUniform(rlGetLocationUniform(m_computeShaderProgram, rl::TextFormat("scene.spheres[%d].radius", i)),
+        rlSetUniform(rlGetLocationUniform(m_computeShaderProgram,
+                                          rl::TextFormat("scene.spheres[%d].radius", i)),
                      &rad, RL_SHADER_UNIFORM_FLOAT, 1);
-        rlSetUniform(rlGetLocationUniform(m_computeShaderProgram, rl::TextFormat("scene.spheres[%d].color", i)),
+        rlSetUniform(rlGetLocationUniform(m_computeShaderProgram,
+                                          rl::TextFormat("scene.spheres[%d].color", i)),
                      &col, RL_SHADER_UNIFORM_VEC3, 1);
     }
 
@@ -144,7 +148,17 @@ void Renderer::updateShaderSpheres() {
     rlSetUniform(rlGetLocationUniform(m_computeShaderProgram, "scene.numSpheres"), &numSpheres,
                  RL_SHADER_UNIFORM_INT, 1);
 
-    rl::Vector3 backgroundColor = {210/255.0f, 210/255.0f, 210/255.0f};
+    rl::Vector3 backgroundColor = {210 / 255.0f, 210 / 255.0f, 210 / 255.0f};
     rlSetUniform(rlGetLocationUniform(m_computeShaderProgram, "scene.backgroundColor"),
                  &backgroundColor, RL_SHADER_UNIFORM_VEC3, 1);
+}
+
+
+void Renderer::updateShaderConfig() {
+    float bounceLimit = 5;
+    float numSamples = 16;
+    rlSetUniform(rlGetLocationUniform(m_computeShaderProgram, "config.bounceLimit"), &bounceLimit,
+                 RL_SHADER_UNIFORM_FLOAT, 1);
+    rlSetUniform(rlGetLocationUniform(m_computeShaderProgram, "config.numSamples"), &numSamples,
+                 RL_SHADER_UNIFORM_FLOAT, 1);
 }
