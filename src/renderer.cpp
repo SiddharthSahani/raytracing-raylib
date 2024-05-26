@@ -29,8 +29,16 @@ void Renderer::loop() {
     updateShaderSpheres();
     updateShaderConfig();
 
+    static int frameIndex = 0;
+    unsigned uniformLocation_frameIndex = rlGetLocationUniform(m_computeShaderProgram, "frameIndex");
+
     while (!rl::WindowShouldClose()) {
+        frameIndex += 1;
+
+        rlEnableShader(m_computeShaderProgram);
+        rlSetUniform(uniformLocation_frameIndex, &frameIndex, RL_SHADER_UNIFORM_INT, 1);
         runComputeShader();
+        rlDisableShader();
 
         rl::BeginDrawing();
 
@@ -74,11 +82,9 @@ void Renderer::runComputeShader() {
     rlBindImageTexture(m_outputTexture.id, 0, RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32, false);
     rlBindShaderBuffer(m_buffer, 1);
 
-    rlEnableShader(m_computeShaderProgram);
     const int groupX = m_imageSize.x / m_computeLocalSize;
     const int groupY = m_imageSize.y / m_computeLocalSize;
     rlComputeShaderDispatch(groupX, groupY, 1);
-    rlDisableShader();
 }
 
 void Renderer::updateShaderCamera() {

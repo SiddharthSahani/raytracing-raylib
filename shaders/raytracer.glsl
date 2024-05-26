@@ -54,6 +54,7 @@ layout (rgba32f, binding = 0) uniform image2D outputImage;
 uniform Camera camera;
 uniform Scene scene;
 uniform Config config;
+uniform int frameIndex;
 
 
 // ----- RNG FUNCTIONS -----
@@ -164,7 +165,7 @@ vec3 perPixel(inout uint rngState) {
 
 void main() {
     ivec2 pixelCoord = ivec2(gl_GlobalInvocationID.xy);
-    uint rngState = pixelCoord.x * pixelCoord.y;
+    uint rngState = pixelCoord.x * pixelCoord.y + uint(frameIndex) * 32421u;
 
     vec3 color = vec3(0.0, 0.0, 0.0);
     for (float i = 0; i < config.numSamples; i++) {
