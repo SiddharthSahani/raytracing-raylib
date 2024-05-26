@@ -19,8 +19,8 @@ private:
     void makeBufferObjects();
     void compileComputeShader();
     void runComputeShader();
-    // void updateShaderCamera();
-    // void updateShaderSpheres();
+    void updateShaderCamera();
+    void updateShaderSpheres();
 
 private:
     rl::Vector2 m_windowSize;

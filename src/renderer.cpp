@@ -2,7 +2,6 @@
 #include "src/renderer.h"
 
 using namespace rl;
-#include <raylib/raymath.h>
 #include <raylib/rlgl.h>
 
 
@@ -25,6 +24,10 @@ Renderer::~Renderer() {
 
 
 void Renderer::loop() {
+    rlEnableShader(m_computeShaderProgram);
+    updateShaderCamera();
+    updateShaderSpheres();
+
     while (!rl::WindowShouldClose()) {
         runComputeShader();
 
@@ -54,7 +57,8 @@ void Renderer::makeBufferObjects() {
 
 void Renderer::compileComputeShader() {
     char* fileText = rl::LoadFileText("shaders/raytracer.glsl");
-    char* newfileText = rl::TextReplace(fileText, "WG_SIZE_PLACEHOLDER", rl::TextFormat("%d", m_computeLocalSize));
+    char* newfileText =
+        rl::TextReplace(fileText, "WG_SIZE_PLACEHOLDER", rl::TextFormat("%d", m_computeLocalSize));
     rl::UnloadFileText(fileText);
     unsigned shaderId = rlCompileShader(newfileText, RL_COMPUTE_SHADER);
     m_computeShaderProgram = rlLoadComputeShaderProgram(shaderId);
@@ -76,65 +80,71 @@ void Renderer::runComputeShader() {
     rlDisableShader();
 }
 
-// void Renderer::updateShaderCamera() {
-//     rl::Vector3 position = {0, 0, 6};
-//     rl::Vector3 direction = {0, 0, -1};
+void Renderer::updateShaderCamera() {
+    rl::Vector3 position = {0, 0, 6};
+    rl::Vector3 direction = {0, 0, -1};
 
-//     rl::Matrix viewMat = MatrixLookAt(position, Vector3Add(position, direction), {0, 1, 0});
-//     rl::Matrix invViewMat = MatrixInvert(viewMat);
+    unsigned shaderLocation_cameraPosition =
+        rlGetLocationUniform(m_computeShaderProgram, "camera.position");
+    unsigned shaderLocation_cameraDirection =
+        rlGetLocationUniform(m_computeShaderProgram, "camera.direction");
 
-//     rl::Matrix projMat =
-//         MatrixPerspective(60.0 * DEG2RAD, m_imageSize.x / m_imageSize.y, 0.1, 100.0);
-//     rl::Matrix invProjMat = MatrixInvert(projMat);
-
-//     rl::SetShaderValue(m_renderShader, rl::GetShaderLocation(m_renderShader, "uImageSize"),
-//                        &m_imageSize, rl::SHADER_UNIFORM_VEC2);
-//     rl::SetShaderValueMatrix(
-//         m_renderShader, rl::GetShaderLocation(m_renderShader, "camera.invViewMat"), invViewMat);
-//     rl::SetShaderValueMatrix(
-//         m_renderShader, rl::GetShaderLocation(m_renderShader, "camera.invProjMat"), invProjMat);
-//     rl::SetShaderValue(m_renderShader, rl::GetShaderLocation(m_renderShader, "camera.position"),
-//                        &position, rl::SHADER_UNIFORM_VEC3);
-// }
+    rlSetUniform(shaderLocation_cameraPosition, &position, RL_SHADER_UNIFORM_VEC3, 1);
+    rlSetUniform(shaderLocation_cameraDirection, &direction, RL_SHADER_UNIFORM_VEC3, 1);
+}
 
 
-// void Renderer::updateShaderSpheres() {
-//     {
-//         rl::Vector3 spherePos = {0, 0, 0};
-//         float sphereRad = 1.0;
-//         rl::Vector3 sphereCol = {0.2, 0.9, 0.8};
-//         rl::SetShaderValue(m_renderShader,
-//                            rl::GetShaderLocation(m_renderShader, "scene.spheres[0].position"),
-//                            &spherePos, rl::SHADER_UNIFORM_VEC3);
-//         rl::SetShaderValue(m_renderShader,
-//                            rl::GetShaderLocation(m_renderShader, "scene.spheres[0].radius"),
-//                            &sphereRad, rl::SHADER_UNIFORM_FLOAT);
-//         rl::SetShaderValue(m_renderShader,
-//                            rl::GetShaderLocation(m_renderShader, "scene.spheres[0].color"),
-//                            &sphereCol, rl::SHADER_UNIFORM_VEC3);
-//     }
-//     {
-//         rl::Vector3 spherePos = {0, -4, 0};
-//         float sphereRad = 3.0;
-//         rl::Vector3 sphereCol = {1, 0, 1};
-//         rl::SetShaderValue(m_renderShader,
-//                            rl::GetShaderLocation(m_renderShader, "scene.spheres[1].position"),
-//                            &spherePos, rl::SHADER_UNIFORM_VEC3);
-//         rl::SetShaderValue(m_renderShader,
-//                            rl::GetShaderLocation(m_renderShader, "scene.spheres[1].radius"),
-//                            &sphereRad, rl::SHADER_UNIFORM_FLOAT);
-//         rl::SetShaderValue(m_renderShader,
-//                            rl::GetShaderLocation(m_renderShader, "scene.spheres[1].color"),
-//                            &sphereCol, rl::SHADER_UNIFORM_VEC3);
-//     }
+void Renderer::updateShaderSpheres() {
+    int numSpheres = 16;
+    rl::SetRandomSeed(1);
+    for (int i = 0; i < numSpheres; i++) {
+        rl::Vector3 pos = {
+            rl::GetRandomValue(-20000, 20000) / 10000.0f,
+            rl::GetRandomValue(-20000, 20000) / 10000.0f,
+            rl::GetRandomValue(-20000, 20000) / 10000.0f,
+        };
+        float rad = rl::GetRandomValue(5000, 8000) / 10000.0f;
+        rl::Vector3 col = {
+            rl::GetRandomValue(0, 10000) / 10000.0f,
+            rl::GetRandomValue(0, 10000) / 10000.0f,
+            rl::GetRandomValue(0, 10000) / 10000.0f,
+        };
+        rlSetUniform(rlGetLocationUniform(m_computeShaderProgram, rl::TextFormat("scene.spheres[%d].position", i)),
+                     &pos, RL_SHADER_UNIFORM_VEC3, 1);
+        rlSetUniform(rlGetLocationUniform(m_computeShaderProgram, rl::TextFormat("scene.spheres[%d].radius", i)),
+                     &rad, RL_SHADER_UNIFORM_FLOAT, 1);
+        rlSetUniform(rlGetLocationUniform(m_computeShaderProgram, rl::TextFormat("scene.spheres[%d].color", i)),
+                     &col, RL_SHADER_UNIFORM_VEC3, 1);
+    }
 
-//     int numSpheres = 2;
-//     rl::SetShaderValue(m_renderShader, rl::GetShaderLocation(m_renderShader, "scene.numSpheres"),
-//                        &numSpheres, rl::SHADER_UNIFORM_INT);
+    // {
+    //     rl::Vector3 spherePos = {0, 0, 0};
+    //     float sphereRad = 1.0;
+    //     rl::Vector3 sphereCol = {0.2, 0.9, 0.8};
+    //     rlSetUniform(rlGetLocationUniform(m_computeShaderProgram, "scene.spheres[0].position"),
+    //                  &spherePos, RL_SHADER_UNIFORM_VEC3, 1);
+    //     rlSetUniform(rlGetLocationUniform(m_computeShaderProgram, "scene.spheres[0].radius"),
+    //                  &sphereRad, RL_SHADER_UNIFORM_FLOAT, 1);
+    //     rlSetUniform(rlGetLocationUniform(m_computeShaderProgram, "scene.spheres[0].color"),
+    //                  &sphereCol, RL_SHADER_UNIFORM_VEC3, 1);
+    // }
+    // {
+    //     rl::Vector3 spherePos = {0, -4, 0};
+    //     float sphereRad = 3.0;
+    //     rl::Vector3 sphereCol = {1, 0, 1};
+    //     rlSetUniform(rlGetLocationUniform(m_computeShaderProgram, "scene.spheres[1].position"),
+    //                  &spherePos, RL_SHADER_UNIFORM_VEC3, 1);
+    //     rlSetUniform(rlGetLocationUniform(m_computeShaderProgram, "scene.spheres[1].radius"),
+    //                  &sphereRad, RL_SHADER_UNIFORM_FLOAT, 1);
+    //     rlSetUniform(rlGetLocationUniform(m_computeShaderProgram, "scene.spheres[1].color"),
+    //                  &sphereCol, RL_SHADER_UNIFORM_VEC3, 1);
+    // }
 
-//     rl::Vector3 backgroundColor = {210, 210, 210};
-//     backgroundColor = Vector3Divide(backgroundColor, {255, 255, 255});
-//     rl::SetShaderValue(m_renderShader,
-//                        rl::GetShaderLocation(m_renderShader, "scene.backgroundColor"),
-//                        &backgroundColor, rl::SHADER_UNIFORM_VEC3);
-// }
+    // int numSpheres = 2;
+    rlSetUniform(rlGetLocationUniform(m_computeShaderProgram, "scene.numSpheres"), &numSpheres,
+                 RL_SHADER_UNIFORM_INT, 1);
+
+    rl::Vector3 backgroundColor = {210/255.0f, 210/255.0f, 210/255.0f};
+    rlSetUniform(rlGetLocationUniform(m_computeShaderProgram, "scene.backgroundColor"),
+                 &backgroundColor, RL_SHADER_UNIFORM_VEC3, 1);
+}
