@@ -29,5 +29,4 @@ private:
     unsigned m_computeLocalSize;
     rl::Texture m_outputTexture;
     unsigned m_computeShaderProgram;
-    unsigned m_buffer;
 };

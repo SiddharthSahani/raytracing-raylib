@@ -60,7 +60,6 @@ void Renderer::makeOutputTexture() {
 
 
 void Renderer::makeBufferObjects() {
-    m_buffer = rlLoadShaderBuffer(sizeof(float), nullptr, RL_DYNAMIC_COPY);
 }
 
 
@@ -76,11 +75,7 @@ void Renderer::compileComputeShader() {
 
 
 void Renderer::runComputeShader() {
-    float time = rl::GetTime();
-    rlUpdateShaderBuffer(m_buffer, &time, sizeof(float), 0);
-
     rlBindImageTexture(m_outputTexture.id, 0, RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32, false);
-    rlBindShaderBuffer(m_buffer, 1);
 
     const int groupX = m_imageSize.x / m_computeLocalSize;
     const int groupY = m_imageSize.y / m_computeLocalSize;
