@@ -7,7 +7,7 @@
 class Renderer {
 
 public:
-    Renderer(Vector2 windowSize, Vector2 imageSize, unsigned computeLocalSize = 8, unsigned maxSphereCount = 32);
+    Renderer(Vector2 windowSize, Vector2 imageSize, unsigned computeLocalSize = 8);
     ~Renderer();
     void loop();
 
@@ -24,7 +24,6 @@ private:
     Vector2 m_windowSize;
     Vector2 m_imageSize;
     unsigned m_computeLocalSize;
-    unsigned m_maxSphereCount;
     Texture m_outImage;
     unsigned m_computeShaderProgram;
 };

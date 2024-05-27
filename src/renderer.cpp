@@ -3,10 +3,8 @@
 #include <raylib/rlgl.h>
 
 
-Renderer::Renderer(Vector2 windowSize, Vector2 imageSize, unsigned computeLocalSize,
-                   unsigned maxSphereCount)
-    : m_windowSize(windowSize), m_imageSize(imageSize), m_computeLocalSize(computeLocalSize),
-      m_maxSphereCount(maxSphereCount) {
+Renderer::Renderer(Vector2 windowSize, Vector2 imageSize, unsigned computeLocalSize)
+    : m_windowSize(windowSize), m_imageSize(imageSize), m_computeLocalSize(computeLocalSize) {
     InitWindow(m_windowSize.x, m_windowSize.y, "Raytracing");
     SetTargetFPS(30);
 
@@ -67,20 +65,12 @@ void Renderer::makeBufferObjects() {}
 
 void Renderer::compileComputeShader() {
     char* fileText = LoadFileText("shaders/raytracer.glsl");
-
-    auto replaceFn = [&](const char* replaceStr, const char* byStr) {
-        char* temp = TextReplace(fileText, replaceStr, byStr);
-        MemFree(fileText);
-        fileText = temp;
-    };
-
-    replaceFn("WG_SIZE_PLACEHOLDER", TextFormat("%d", m_computeLocalSize));
-    replaceFn("MAX_SPHERE_COUNT_PLACEHOLDER", TextFormat("%d", m_maxSphereCount));
-
-    unsigned shaderId = rlCompileShader(fileText, RL_COMPUTE_SHADER);
-    m_computeShaderProgram = rlLoadComputeShaderProgram(shaderId);
-
+    char* newfileText =
+        TextReplace(fileText, "WG_SIZE_PLACEHOLDER", TextFormat("%d", m_computeLocalSize));
     UnloadFileText(fileText);
+    unsigned shaderId = rlCompileShader(newfileText, RL_COMPUTE_SHADER);
+    m_computeShaderProgram = rlLoadComputeShaderProgram(shaderId);
+    UnloadFileText(newfileText);
 }
 
 

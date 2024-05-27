@@ -25,10 +25,8 @@ struct Sphere {
 
 int pass(const Sphere& sphere, void* dst) {
     int offset = 0;
-
     offset += pass(sphere.position, dst + offset);
     offset += pass(sphere.radius, dst + offset, false);
     offset += pass(sphere.color, dst + offset);
-
     return offset;
 }
