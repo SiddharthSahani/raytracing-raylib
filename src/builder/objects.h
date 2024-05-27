@@ -1,14 +1,8 @@
 
 #pragma once
 
+#include "src/structs/objects.h"
 #include "src/builder/utils.h"
-
-
-struct Sphere {
-    Vector3 position;
-    float radius;
-    Color color;
-};
 
 
 /*
@@ -22,11 +16,12 @@ struct Sphere {
 48 bytes in total
 */
 
-
 int pass(const Sphere& sphere, void* dst) {
     int offset = 0;
+
     offset += pass(sphere.position, dst + offset);
     offset += pass(sphere.radius, dst + offset, false);
     offset += pass(sphere.color, dst + offset);
+
     return offset;
 }

@@ -1,14 +1,8 @@
 
 #pragma once
 
+#include "src/structs/scene.h"
 #include "src/builder/objects.h"
-#include <vector>
-
-
-struct Scene {
-    std::vector<Sphere> spheres;
-    Color backgroundColor;
-};
 
 
 /*
