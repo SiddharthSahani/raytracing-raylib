@@ -5,7 +5,13 @@
 #include <vector>
 
 
+namespace rt {
+
+
 struct Scene {
     std::vector<Sphere> spheres;
     Color backgroundColor;
 };
+
+
+}

@@ -16,7 +16,7 @@ struct Sphere {
 48 bytes in total
 */
 
-int pass(const Sphere& sphere, void* dst) {
+int pass(const rt::Sphere& sphere, void* dst) {
     int offset = 0;
 
     offset += pass(sphere.position, dst + offset);

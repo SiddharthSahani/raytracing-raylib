@@ -7,10 +7,9 @@
 namespace rt {
 
 
-struct Sphere {
+struct Camera {
     Vector3 position;
-    float radius;
-    Color color;
+    Vector3 direction;
 };
 
 
