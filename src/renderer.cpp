@@ -1,14 +1,12 @@
 
 #include "src/renderer.h"
-
-using namespace rl;
 #include <raylib/rlgl.h>
 
 
-Renderer::Renderer(rl::Vector2 windowSize, rl::Vector2 imageSize, unsigned computeLocalSize)
+Renderer::Renderer(Vector2 windowSize, Vector2 imageSize, unsigned computeLocalSize)
     : m_windowSize(windowSize), m_imageSize(imageSize), m_computeLocalSize(computeLocalSize) {
-    rl::InitWindow(m_windowSize.x, m_windowSize.y, "Raytracing");
-    rl::SetTargetFPS(30);
+    InitWindow(m_windowSize.x, m_windowSize.y, "Raytracing");
+    SetTargetFPS(30);
 
     makeImage();
     makeBufferObjects();
@@ -18,8 +16,8 @@ Renderer::Renderer(rl::Vector2 windowSize, rl::Vector2 imageSize, unsigned compu
 
 Renderer::~Renderer() {
     rlUnloadShaderProgram(m_computeShaderProgram);
-    rl::UnloadTexture(m_outImage);
-    rl::CloseWindow();
+    UnloadTexture(m_outImage);
+    CloseWindow();
 }
 
 
@@ -34,7 +32,7 @@ void Renderer::loop() {
     unsigned uniformLocation_frameIndex =
         rlGetLocationUniform(m_computeShaderProgram, "frameIndex");
 
-    while (!rl::WindowShouldClose()) {
+    while (!WindowShouldClose()) {
         frameIndex += 1;
 
         rlEnableShader(m_computeShaderProgram);
@@ -42,23 +40,23 @@ void Renderer::loop() {
         runComputeShader();
         rlDisableShader();
 
-        rl::BeginDrawing();
+        BeginDrawing();
 
-        rl::DrawTexturePro(m_outImage, {0, 0, m_imageSize.x, m_imageSize.y},
-                           {0, 0, m_windowSize.x, m_windowSize.y}, {0, 0}, 0, rl::WHITE);
+        DrawTexturePro(m_outImage, {0, 0, m_imageSize.x, m_imageSize.y},
+                       {0, 0, m_windowSize.x, m_windowSize.y}, {0, 0}, 0, WHITE);
 
-        rl::DrawFPS(10, 10);
-        rl::DrawText(rl::TextFormat("Frame Time: %.5f", rl::GetFrameTime()), 10, 30, 20, rl::DARKBLUE);
-        rl::EndDrawing();
+        DrawFPS(10, 10);
+        DrawText(TextFormat("Frame Time: %.5f", GetFrameTime()), 10, 30, 20, DARKBLUE);
+        EndDrawing();
     }
 }
 
 
 void Renderer::makeImage() {
-    rl::Image image = rl::GenImageColor(m_imageSize.x, m_imageSize.y, rl::BLUE);
-    rl::ImageFormat(&image, RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32);
-    m_outImage = rl::LoadTextureFromImage(image);
-    rl::UnloadImage(image);
+    Image image = GenImageColor(m_imageSize.x, m_imageSize.y, BLUE);
+    ImageFormat(&image, RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32);
+    m_outImage = LoadTextureFromImage(image);
+    UnloadImage(image);
 }
 
 
@@ -66,13 +64,13 @@ void Renderer::makeBufferObjects() {}
 
 
 void Renderer::compileComputeShader() {
-    char* fileText = rl::LoadFileText("shaders/raytracer.glsl");
+    char* fileText = LoadFileText("shaders/raytracer.glsl");
     char* newfileText =
-        rl::TextReplace(fileText, "WG_SIZE_PLACEHOLDER", rl::TextFormat("%d", m_computeLocalSize));
-    rl::UnloadFileText(fileText);
+        TextReplace(fileText, "WG_SIZE_PLACEHOLDER", TextFormat("%d", m_computeLocalSize));
+    UnloadFileText(fileText);
     unsigned shaderId = rlCompileShader(newfileText, RL_COMPUTE_SHADER);
     m_computeShaderProgram = rlLoadComputeShaderProgram(shaderId);
-    rl::UnloadFileText(newfileText);
+    UnloadFileText(newfileText);
 }
 
 
@@ -85,8 +83,8 @@ void Renderer::runComputeShader() {
 }
 
 void Renderer::updateShaderCamera() {
-    rl::Vector3 position = {0, 0, 6};
-    rl::Vector3 direction = {0, 0, -1};
+    Vector3 position = {0, 0, 6};
+    Vector3 direction = {0, 0, -1};
 
     unsigned shaderLocation_cameraPosition =
         rlGetLocationUniform(m_computeShaderProgram, "camera.position");
@@ -100,34 +98,34 @@ void Renderer::updateShaderCamera() {
 
 void Renderer::updateShaderSpheres() {
     int numSpheres = 16;
-    rl::SetRandomSeed(1);
+    SetRandomSeed(1);
     for (int i = 0; i < numSpheres; i++) {
-        rl::Vector3 pos = {
-            rl::GetRandomValue(-20000, 20000) / 10000.0f,
-            rl::GetRandomValue(-20000, 20000) / 10000.0f,
-            rl::GetRandomValue(-20000, 20000) / 10000.0f,
+        Vector3 pos = {
+            GetRandomValue(-20000, 20000) / 10000.0f,
+            GetRandomValue(-20000, 20000) / 10000.0f,
+            GetRandomValue(-20000, 20000) / 10000.0f,
         };
-        float rad = rl::GetRandomValue(5000, 8000) / 10000.0f;
-        rl::Vector3 col = {
-            rl::GetRandomValue(0, 10000) / 10000.0f,
-            rl::GetRandomValue(0, 10000) / 10000.0f,
-            rl::GetRandomValue(0, 10000) / 10000.0f,
+        float rad = GetRandomValue(5000, 8000) / 10000.0f;
+        Vector3 col = {
+            GetRandomValue(0, 10000) / 10000.0f,
+            GetRandomValue(0, 10000) / 10000.0f,
+            GetRandomValue(0, 10000) / 10000.0f,
         };
         rlSetUniform(rlGetLocationUniform(m_computeShaderProgram,
-                                          rl::TextFormat("scene.spheres[%d].position", i)),
+                                          TextFormat("scene.spheres[%d].position", i)),
                      &pos, RL_SHADER_UNIFORM_VEC3, 1);
-        rlSetUniform(rlGetLocationUniform(m_computeShaderProgram,
-                                          rl::TextFormat("scene.spheres[%d].radius", i)),
-                     &rad, RL_SHADER_UNIFORM_FLOAT, 1);
-        rlSetUniform(rlGetLocationUniform(m_computeShaderProgram,
-                                          rl::TextFormat("scene.spheres[%d].color", i)),
-                     &col, RL_SHADER_UNIFORM_VEC3, 1);
+        rlSetUniform(
+            rlGetLocationUniform(m_computeShaderProgram, TextFormat("scene.spheres[%d].radius", i)),
+            &rad, RL_SHADER_UNIFORM_FLOAT, 1);
+        rlSetUniform(
+            rlGetLocationUniform(m_computeShaderProgram, TextFormat("scene.spheres[%d].color", i)),
+            &col, RL_SHADER_UNIFORM_VEC3, 1);
     }
 
     // {
-    //     rl::Vector3 spherePos = {0, 0, 0};
+    //     Vector3 spherePos = {0, 0, 0};
     //     float sphereRad = 1.0;
-    //     rl::Vector3 sphereCol = {0.2, 0.9, 0.8};
+    //     Vector3 sphereCol = {0.2, 0.9, 0.8};
     //     rlSetUniform(rlGetLocationUniform(m_computeShaderProgram,
     //     "scene.spheres[0].position"),
     //                  &spherePos, RL_SHADER_UNIFORM_VEC3, 1);
@@ -137,9 +135,9 @@ void Renderer::updateShaderSpheres() {
     //                  &sphereCol, RL_SHADER_UNIFORM_VEC3, 1);
     // }
     // {
-    //     rl::Vector3 spherePos = {0, -4, 0};
+    //     Vector3 spherePos = {0, -4, 0};
     //     float sphereRad = 3.0;
-    //     rl::Vector3 sphereCol = {1, 0, 1};
+    //     Vector3 sphereCol = {1, 0, 1};
     //     rlSetUniform(rlGetLocationUniform(m_computeShaderProgram,
     //     "scene.spheres[1].position"),
     //                  &spherePos, RL_SHADER_UNIFORM_VEC3, 1);
@@ -153,7 +151,7 @@ void Renderer::updateShaderSpheres() {
     rlSetUniform(rlGetLocationUniform(m_computeShaderProgram, "scene.numSpheres"), &numSpheres,
                  RL_SHADER_UNIFORM_INT, 1);
 
-    rl::Vector3 backgroundColor = {210 / 255.0f, 210 / 255.0f, 210 / 255.0f};
+    Vector3 backgroundColor = {210 / 255.0f, 210 / 255.0f, 210 / 255.0f};
     rlSetUniform(rlGetLocationUniform(m_computeShaderProgram, "scene.backgroundColor"),
                  &backgroundColor, RL_SHADER_UNIFORM_VEC3, 1);
 }
