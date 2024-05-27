@@ -48,6 +48,7 @@ void Renderer::loop() {
                            {0, 0, m_windowSize.x, m_windowSize.y}, {0, 0}, 0, rl::WHITE);
 
         rl::DrawFPS(10, 10);
+        rl::DrawText(rl::TextFormat("Frame Time: %.5f", rl::GetFrameTime()), 10, 30, 20, rl::DARKBLUE);
         rl::EndDrawing();
     }
 }
