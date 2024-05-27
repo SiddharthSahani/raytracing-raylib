@@ -3,8 +3,6 @@
 layout (local_size_x = WG_SIZE_PLACEHOLDER, local_size_y = WG_SIZE_PLACEHOLDER, local_size_z = 1) in;
 
 #define FLT_MAX 3.402823466e+38F
-#define MAX_SPHERES 32
-
 
 // ----- STRUCT DEFINITIONS -----
 
@@ -36,7 +34,7 @@ struct HitRecord {
 
 
 struct Scene {
-    Sphere spheres[MAX_SPHERES];
+    Sphere spheres[MAX_SPHERE_COUNT_PLACEHOLDER];
     vec3 backgroundColor;
     int numSpheres;
 };
