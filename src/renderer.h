@@ -22,6 +22,7 @@ public:
     void setCurrentConfig(const rt::Config& config);
 
 private:
+    int getUniformLoc(const char*) const;
     void makeImage();
     void makeBufferObjects();
     void compileComputeShader();

@@ -35,6 +35,11 @@ void Renderer::draw() const {
 }
 
 
+int Renderer::getUniformLoc(const char* uniformName) const {
+    return rlGetLocationUniform(m_computeShaderProgram, uniformName);
+}
+
+
 void Renderer::makeImage() {
     Image image = GenImageColor(m_imageSize.x, m_imageSize.y, BLUE);
     ImageFormat(&image, RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32);
@@ -55,8 +60,8 @@ void Renderer::compileComputeShader() {
         fileText = temp;
     };
 
-    replaceFn("WG_SIZE_PLACEHOLDER", TextFormat("%d", m_computeLocalSize));
-    replaceFn("MAX_SPHERE_COUNT_PLACEHOLDER", TextFormat("%d", m_computeLocalSize));
+    replaceFn("WG_SIZE", TextFormat("%d", m_computeLocalSize));
+    replaceFn("MAX_SPHERE_COUNT", TextFormat("%d", m_computeLocalSize));
 
     unsigned shaderId = rlCompileShader(fileText, RL_COMPUTE_SHADER);
     m_computeShaderProgram = rlLoadComputeShaderProgram(shaderId);
@@ -70,8 +75,7 @@ void Renderer::runComputeShader() {
         return;
     }
 
-    static unsigned shaderLoc_frameIndex =
-        rlGetLocationUniform(m_computeShaderProgram, "frameIndex");
+    static unsigned shaderLoc_frameIndex = getUniformLoc("frameIndex");
     static int frameIndex = 0;
     frameIndex++;
 
@@ -89,8 +93,8 @@ void Renderer::setCurrentCamera(const rt::Camera& camera) {
     rlEnableShader(m_computeShaderProgram);
     m_hasCamera = true;
 
-    unsigned shaderLoc_position = rlGetLocationUniform(m_computeShaderProgram, "camera.position");
-    unsigned shaderLoc_direction = rlGetLocationUniform(m_computeShaderProgram, "camera.direction");
+    unsigned shaderLoc_position = getUniformLoc("camera.position");
+    unsigned shaderLoc_direction = getUniformLoc("camera.direction");
 
     rlSetUniform(shaderLoc_position, &camera.position, RL_SHADER_UNIFORM_VEC3, 1);
     rlSetUniform(shaderLoc_direction, &camera.direction, RL_SHADER_UNIFORM_VEC3, 1);
@@ -104,24 +108,19 @@ void Renderer::setCurrentScene(const rt::Scene& scene) {
     int n = std::min((unsigned)scene.spheres.size(), m_maxSphereCount);
 
     for (int i = 0; i < n; i++) {
-        unsigned shaderLoc_position = rlGetLocationUniform(
-            m_computeShaderProgram, TextFormat("scene.spheres[%d].position", i));
-        unsigned shaderLoc_radius =
-            rlGetLocationUniform(m_computeShaderProgram, TextFormat("scene.spheres[%d].radius", i));
-        unsigned shaderLoc_color =
-            rlGetLocationUniform(m_computeShaderProgram, TextFormat("scene.spheres[%d].color", i));
+        unsigned shaderLoc_pos = getUniformLoc(TextFormat("sceneObjects.spheres[%d].position", i));
+        unsigned shaderLoc_radius = getUniformLoc(TextFormat("sceneObjects.spheres[%d].radius", i));
+        unsigned shaderLoc_color = getUniformLoc(TextFormat("sceneObjects.spheres[%d].color", i));
 
         Vector4 colorVec = ColorNormalize(scene.spheres[i].color);
 
-        rlSetUniform(shaderLoc_position, &scene.spheres[i].position, RL_SHADER_UNIFORM_VEC3, 1);
+        rlSetUniform(shaderLoc_pos, &scene.spheres[i].position, RL_SHADER_UNIFORM_VEC3, 1);
         rlSetUniform(shaderLoc_radius, &scene.spheres[i].radius, RL_SHADER_UNIFORM_FLOAT, 1);
         rlSetUniform(shaderLoc_color, &colorVec, RL_SHADER_UNIFORM_VEC3, 1);
     }
 
-    unsigned shaderLoc_backgroundColor =
-        rlGetLocationUniform(m_computeShaderProgram, "scene.backgroundColor");
-    unsigned shaderLoc_numSpheres =
-        rlGetLocationUniform(m_computeShaderProgram, "scene.numSpheres");
+    unsigned shaderLoc_backgroundColor = getUniformLoc("sceneInfo.backgroundColor");
+    unsigned shaderLoc_numSpheres = getUniformLoc("sceneInfo.numSpheres");
 
     Vector4 backgroundColorVec = ColorNormalize(scene.backgroundColor);
 
@@ -134,10 +133,8 @@ void Renderer::setCurrentConfig(const rt::Config& config) {
     rlEnableShader(m_computeShaderProgram);
     m_hasConfig = true;
 
-    unsigned shaderLoc_bounceLimit =
-        rlGetLocationUniform(m_computeShaderProgram, "config.bounceLimit");
-    unsigned shaderLoc_numSamples =
-        rlGetLocationUniform(m_computeShaderProgram, "config.numSamples");
+    unsigned shaderLoc_bounceLimit = getUniformLoc("config.bounceLimit");
+    unsigned shaderLoc_numSamples = getUniformLoc("config.numSamples");
 
     rlSetUniform(shaderLoc_bounceLimit, &config.bounceLimit, RL_SHADER_UNIFORM_FLOAT, 1);
     rlSetUniform(shaderLoc_numSamples, &config.numSamples, RL_SHADER_UNIFORM_FLOAT, 1);

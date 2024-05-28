@@ -2,6 +2,55 @@
 #include "src/renderer.h"
 
 
+rt::Scene createRandomScene(int numSpheres) {
+    SetRandomSeed(0);
+
+    rt::Scene scene;
+
+    for (int i = 0; i < numSpheres; i++) {
+        Vector3 pos = {
+            GetRandomValue(-22000, 22000) / 10000.0f,
+            GetRandomValue(-22000, 22000) / 10000.0f,
+            GetRandomValue(-22000, 22000) / 10000.0f,
+        };
+        float rad = GetRandomValue(4000, 9000) / 10000.0f;
+        Color col = {
+            GetRandomValue(0, 255),
+            GetRandomValue(0, 255),
+            GetRandomValue(0, 255),
+            255,
+        };
+
+        scene.spheres.push_back(rt::Sphere{pos, rad, col});
+    }
+
+    scene.backgroundColor = {210, 210, 240, 255};
+    return scene;
+}
+
+
+rt::Scene createScene_1() {
+    rt::Scene scene;
+
+    rt::Sphere centerSphere = {
+        .position = {0, 0, 0},
+        .radius = 1.0,
+        .color = {50, 230, 200, 255},
+    };
+    scene.spheres.push_back(centerSphere);
+
+    rt::Sphere groundSphere = {
+        .position = {0, -6, 0},
+        .radius = 5.0,
+        .color = {255, 0, 255, 255},
+    };
+    scene.spheres.push_back(groundSphere);
+
+    scene.backgroundColor = {210, 210, 210, 255};
+    return scene;
+}
+
+
 int main() {
     const int windowWidth = 1280;
     const int windowHeight = 720;
@@ -20,21 +69,8 @@ int main() {
         .numSamples = 16,
     });
 
-    renderer.setCurrentScene({
-        .spheres = {
-            {
-                .position = {0, 0, 0},
-                .radius = 1.0,
-                .color = {50, 230, 205, 255},
-            },
-            {
-                .position = {0, -6, 0},
-                .radius = 5.0,
-                .color = {255, 0, 255, 255},
-            }
-        },
-        .backgroundColor = {210, 210, 215, 255},
-    });
+    renderer.setCurrentScene(createRandomScene(16));
+    // renderer.setCurrentScene(createScene_1());
 
     while (!WindowShouldClose()) {
         renderer.runComputeShader();

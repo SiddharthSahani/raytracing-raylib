@@ -1,6 +1,6 @@
 
 #version 430 core
-layout (local_size_x = WG_SIZE_PLACEHOLDER, local_size_y = WG_SIZE_PLACEHOLDER, local_size_z = 1) in;
+layout (local_size_x = WG_SIZE, local_size_y = WG_SIZE, local_size_z = 1) in;
 
 #define FLT_MAX 3.402823466e+38F
 
@@ -34,8 +34,7 @@ struct HitRecord {
 };
 
 
-struct Scene {
-    Sphere spheres[MAX_SPHERE_COUNT_PLACEHOLDER];
+struct SceneInfo {
     vec3 backgroundColor;
     int numSpheres;
 };
@@ -47,13 +46,19 @@ struct Config {
 };
 
 
+struct SceneObjects {
+    Sphere spheres[MAX_SPHERE_COUNT];
+};
+
+
 // ----- UNIFORMS AND BUFFERS -----
 
 layout (rgba32f, binding = 0) uniform image2D outImage;
 uniform Camera camera;
-uniform Scene scene;
+uniform SceneInfo sceneInfo;
 uniform Config config;
 uniform int frameIndex;
+uniform SceneObjects sceneObjects;
 
 
 // ----- RNG FUNCTIONS -----
@@ -127,8 +132,8 @@ HitRecord traceRay(Ray ray) {
     HitRecord record;
     record.hitDistance = FLT_MAX;
 
-    for (int i = 0; i < scene.numSpheres; i++) {
-        bool closer = hitSphere(scene.spheres[i], ray, record);
+    for (int i = 0; i < sceneInfo.numSpheres; i++) {
+        bool closer = hitSphere(sceneObjects.spheres[i], ray, record);
         if (closer) {
             record.objectIndex = i;
         }
@@ -147,11 +152,11 @@ vec3 perPixel(inout uint rngState) {
         HitRecord record = traceRay(ray);
 
         if (record.hitDistance == FLT_MAX) {
-            light += scene.backgroundColor * contribution;
+            light += sceneInfo.backgroundColor * contribution;
             break;
         }
 
-        contribution *= scene.spheres[record.objectIndex].color;
+        contribution *= sceneObjects.spheres[record.objectIndex].color;
 
         ray.origin = record.worldPosition + record.worldNormal * 0.001;
         // ray.direction = reflect(ray.direction, record.worldNormal);
