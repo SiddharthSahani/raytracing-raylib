@@ -46,11 +46,6 @@ struct Config {
 };
 
 
-struct SceneObjects {
-    Sphere spheres[MAX_SPHERE_COUNT];
-};
-
-
 // ----- UNIFORMS AND BUFFERS -----
 
 layout (rgba32f, binding = 0) uniform image2D outImage;
@@ -58,8 +53,23 @@ uniform Camera camera;
 uniform SceneInfo sceneInfo;
 uniform Config config;
 uniform int frameIndex;
-uniform SceneObjects sceneObjects;
 
+
+#if USE_UNIFORM_OBJECTS
+
+    struct SceneObjects {
+        Sphere spheres[MAX_SPHERE_COUNT];
+    };
+
+    uniform SceneObjects sceneObjects;
+
+#else
+
+    layout (std430, binding = 1) readonly buffer sceneObjectsBlock {
+        Sphere spheres[];
+    } sceneObjects;
+
+#endif
 
 // ----- RNG FUNCTIONS -----
 

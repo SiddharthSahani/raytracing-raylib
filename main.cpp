@@ -32,18 +32,10 @@ rt::Scene createRandomScene(int numSpheres) {
 rt::Scene createScene_1() {
     rt::Scene scene;
 
-    rt::Sphere centerSphere = {
-        .position = {0, 0, 0},
-        .radius = 1.0,
-        .color = {50, 230, 200, 255},
-    };
+    rt::Sphere centerSphere = rt::Sphere({0, 0, 0}, 1.0, {50, 230, 200, 255});
     scene.spheres.push_back(centerSphere);
 
-    rt::Sphere groundSphere = {
-        .position = {0, -6, 0},
-        .radius = 5.0,
-        .color = {255, 0, 255, 255},
-    };
+    rt::Sphere groundSphere = rt::Sphere({0, -6, 0}, 5.0, {255, 0, 255, 255});
     scene.spheres.push_back(groundSphere);
 
     scene.backgroundColor = {210, 210, 210, 255};
@@ -69,8 +61,8 @@ int main() {
         .numSamples = 16,
     });
 
-    renderer.setCurrentScene(createRandomScene(16));
-    // renderer.setCurrentScene(createScene_1());
+    // renderer.setCurrentScene(createRandomScene(16));
+    renderer.setCurrentScene(createScene_1());
 
     while (!WindowShouldClose()) {
         renderer.runComputeShader();

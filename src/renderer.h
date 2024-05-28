@@ -10,7 +10,7 @@ class Renderer {
 
 public:
     Renderer(Vector2 windowSize, Vector2 imageSize, unsigned computeLocalSize = 8,
-             unsigned maxSphereCount = 32);
+             int maxSphereCount = 32);
     ~Renderer();
     void draw() const;
     void runComputeShader();
@@ -36,7 +36,8 @@ private:
     bool m_hasScene = false;
     bool m_hasConfig = false;
 
-    unsigned m_maxSphereCount;
+    int m_maxSphereCount;
     unsigned m_computeLocalSize;
     unsigned m_computeShaderProgram;
+    unsigned m_sceneObjectsBuffer = -1;
 };

@@ -4,7 +4,7 @@
 
 
 Renderer::Renderer(Vector2 windowSize, Vector2 imageSize, unsigned computeLocalSize,
-                   unsigned maxSphereCount)
+                   int maxSphereCount)
     : m_windowSize(windowSize), m_imageSize(imageSize), m_computeLocalSize(computeLocalSize),
       m_maxSphereCount(maxSphereCount) {
     InitWindow(m_windowSize.x, m_windowSize.y, "Raytracing");
@@ -48,7 +48,11 @@ void Renderer::makeImage() {
 }
 
 
-void Renderer::makeBufferObjects() {}
+void Renderer::makeBufferObjects() {
+    if (m_maxSphereCount < 0) {
+        m_sceneObjectsBuffer = rlLoadShaderBuffer(100 * 1024, nullptr, RL_DYNAMIC_COPY);
+    }
+}
 
 
 void Renderer::compileComputeShader() {
@@ -62,6 +66,12 @@ void Renderer::compileComputeShader() {
 
     replaceFn("WG_SIZE", TextFormat("%d", m_computeLocalSize));
     replaceFn("MAX_SPHERE_COUNT", TextFormat("%d", m_computeLocalSize));
+
+    if (m_sceneObjectsBuffer == -1) {
+        replaceFn("USE_UNIFORM_OBJECTS", TextFormat("%d", 1));
+    } else {
+        replaceFn("USE_UNIFORM_OBJECTS", TextFormat("%d", 0));
+    }
 
     unsigned shaderId = rlCompileShader(fileText, RL_COMPUTE_SHADER);
     m_computeShaderProgram = rlLoadComputeShaderProgram(shaderId);
@@ -85,6 +95,7 @@ void Renderer::runComputeShader() {
     rlEnableShader(m_computeShaderProgram);
     rlSetUniform(shaderLoc_frameIndex, &frameIndex, RL_SHADER_UNIFORM_INT, 1);
     rlBindImageTexture(m_outImage.id, 0, RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32, false);
+    rlBindShaderBuffer(m_sceneObjectsBuffer, 1);
     rlComputeShaderDispatch(groupX, groupY, 1);
 }
 
@@ -105,18 +116,29 @@ void Renderer::setCurrentScene(const rt::Scene& scene) {
     rlEnableShader(m_computeShaderProgram);
     m_hasScene = true;
 
-    int n = std::min((unsigned)scene.spheres.size(), m_maxSphereCount);
+    int numSpheres = scene.spheres.size();
+    if (m_sceneObjectsBuffer == -1) {
+        numSpheres = std::min(numSpheres, 32);
+    }
 
-    for (int i = 0; i < n; i++) {
-        unsigned shaderLoc_pos = getUniformLoc(TextFormat("sceneObjects.spheres[%d].position", i));
-        unsigned shaderLoc_radius = getUniformLoc(TextFormat("sceneObjects.spheres[%d].radius", i));
-        unsigned shaderLoc_color = getUniformLoc(TextFormat("sceneObjects.spheres[%d].color", i));
+    if (m_sceneObjectsBuffer == -1) {
 
-        Vector4 colorVec = ColorNormalize(scene.spheres[i].color);
+        for (int i = 0; i < numSpheres; i++) {
+            unsigned shaderLoc_pos = getUniformLoc(TextFormat("sceneObjects.spheres[%d].position", i));
+            unsigned shaderLoc_radius = getUniformLoc(TextFormat("sceneObjects.spheres[%d].radius", i));
+            unsigned shaderLoc_color = getUniformLoc(TextFormat("sceneObjects.spheres[%d].color", i));
 
-        rlSetUniform(shaderLoc_pos, &scene.spheres[i].position, RL_SHADER_UNIFORM_VEC3, 1);
-        rlSetUniform(shaderLoc_radius, &scene.spheres[i].radius, RL_SHADER_UNIFORM_FLOAT, 1);
-        rlSetUniform(shaderLoc_color, &colorVec, RL_SHADER_UNIFORM_VEC3, 1);
+            rlSetUniform(shaderLoc_pos, &scene.spheres[i].position, RL_SHADER_UNIFORM_VEC3, 1);
+            rlSetUniform(shaderLoc_radius, &scene.spheres[i].radius, RL_SHADER_UNIFORM_FLOAT, 1);
+            rlSetUniform(shaderLoc_color, &scene.spheres[i].color, RL_SHADER_UNIFORM_VEC3, 1);
+        }
+
+    } else {
+
+        int sceneObjectsSize = sizeof(rt::Sphere) * numSpheres;
+        TraceLog(LOG_WARNING, "num: %d, size: %d", numSpheres, sceneObjectsSize);
+        rlUpdateShaderBuffer(m_sceneObjectsBuffer, scene.spheres.data(), sceneObjectsSize, 0);
+
     }
 
     unsigned shaderLoc_backgroundColor = getUniformLoc("sceneInfo.backgroundColor");
@@ -125,7 +147,7 @@ void Renderer::setCurrentScene(const rt::Scene& scene) {
     Vector4 backgroundColorVec = ColorNormalize(scene.backgroundColor);
 
     rlSetUniform(shaderLoc_backgroundColor, &backgroundColorVec, RL_SHADER_UNIFORM_VEC3, 1);
-    rlSetUniform(shaderLoc_numSpheres, &n, RL_SHADER_UNIFORM_INT, 1);
+    rlSetUniform(shaderLoc_numSpheres, &numSpheres, RL_SHADER_UNIFORM_INT, 1);
 }
 
 
