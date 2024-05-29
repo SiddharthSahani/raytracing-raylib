@@ -3,16 +3,12 @@
 #include <raylib/rlgl.h>
 
 
-Renderer::Renderer(Vector2 windowSize, Vector2 imageSize, unsigned computeLocalSize,
-                   int maxSphereCount)
-    : m_windowSize(windowSize), m_imageSize(imageSize), m_computeLocalSize(computeLocalSize),
-      m_maxSphereCount(maxSphereCount) {
+Renderer::Renderer(Vector2 windowSize, Vector2 imageSize)
+    : m_windowSize(windowSize), m_imageSize(imageSize) {
     InitWindow(m_windowSize.x, m_windowSize.y, "Raytracing");
     SetTargetFPS(30);
 
-    makeImage();
-    makeBufferObjects();
-    compileComputeShader();
+    makeOutImage();
 }
 
 
@@ -40,7 +36,7 @@ int Renderer::getUniformLoc(const char* uniformName) const {
 }
 
 
-void Renderer::makeImage() {
+void Renderer::makeOutImage() {
     Image image = GenImageColor(m_imageSize.x, m_imageSize.y, BLUE);
     ImageFormat(&image, RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32);
     m_outImage = LoadTextureFromImage(image);
@@ -49,13 +45,18 @@ void Renderer::makeImage() {
 
 
 void Renderer::makeBufferObjects() {
-    if (m_maxSphereCount < 0) {
-        m_sceneObjectsBuffer = rlLoadShaderBuffer(100 * 1024, nullptr, RL_DYNAMIC_COPY);
-    }
+    m_sceneObjectsBuffer = rlLoadShaderBuffer(100 * 1024, nullptr, RL_DYNAMIC_COPY);
 }
 
 
-void Renderer::compileComputeShader() {
+void Renderer::compileComputeShader(unsigned computeLocalSize, unsigned maxSphereCount, bool useBuffers) {
+    m_computeLocalSize = computeLocalSize;
+    m_maxSphereCount = maxSphereCount;
+
+    if (useBuffers) {
+        makeBufferObjects();
+    }
+
     char* fileText = LoadFileText("shaders/raytracer.glsl");
 
     auto replaceFn = [&](const char* replaceStr, const char* byStr) {
@@ -65,9 +66,9 @@ void Renderer::compileComputeShader() {
     };
 
     replaceFn("WG_SIZE", TextFormat("%d", m_computeLocalSize));
-    replaceFn("MAX_SPHERE_COUNT", TextFormat("%d", m_computeLocalSize));
+    replaceFn("MAX_SPHERE_COUNT", TextFormat("%d", m_maxSphereCount));
 
-    if (m_sceneObjectsBuffer == -1) {
+    if (m_sceneObjectsBuffer == 0) {
         replaceFn("USE_UNIFORM_OBJECTS", TextFormat("%d", 1));
     } else {
         replaceFn("USE_UNIFORM_OBJECTS", TextFormat("%d", 0));
@@ -117,11 +118,11 @@ void Renderer::setCurrentScene(const rt::Scene& scene) {
     m_hasScene = true;
 
     int numSpheres = scene.spheres.size();
-    if (m_sceneObjectsBuffer == -1) {
-        numSpheres = std::min(numSpheres, 32);
+    if (m_sceneObjectsBuffer == 0) {
+        numSpheres = std::min(numSpheres, m_maxSphereCount);
     }
 
-    if (m_sceneObjectsBuffer == -1) {
+    if (m_sceneObjectsBuffer == 0) {
 
         for (int i = 0; i < numSpheres; i++) {
             unsigned shaderLoc_pos = getUniformLoc(TextFormat("sceneObjects.spheres[%d].position", i));
@@ -136,7 +137,6 @@ void Renderer::setCurrentScene(const rt::Scene& scene) {
     } else {
 
         int sceneObjectsSize = sizeof(rt::Sphere) * numSpheres;
-        TraceLog(LOG_WARNING, "num: %d, size: %d", numSpheres, sceneObjectsSize);
         rlUpdateShaderBuffer(m_sceneObjectsBuffer, scene.spheres.data(), sceneObjectsSize, 0);
 
     }

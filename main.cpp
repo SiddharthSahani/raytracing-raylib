@@ -52,6 +52,12 @@ int main() {
 
     Renderer renderer({windowWidth, windowHeight}, {imageWidth, imageHeight});
 
+    const int workgroupSize = 8;
+    const int maxSphereCount = 32; // Max number of spheres allowed IF using uniforms
+    const bool useBuffers = false; // Do not use uniforms, use buffers (large memory cap)
+    // if useBuffers is true, maxSphereCount is ignored
+    renderer.compileComputeShader(workgroupSize, maxSphereCount, useBuffers);
+
     renderer.setCurrentCamera({
         .position = {0, 0, 6},
         .direction = {0, 0, -1},

@@ -9,13 +9,14 @@
 class Renderer {
 
 public:
-    Renderer(Vector2 windowSize, Vector2 imageSize, unsigned computeLocalSize = 8,
-             int maxSphereCount = 32);
+    Renderer(Vector2 windowSize, Vector2 imageSize);
     ~Renderer();
     void draw() const;
+    void compileComputeShader(unsigned computeLocalSize, unsigned maxSphereCount, bool useBuffers);
     void runComputeShader();
 
-    bool canRender() const { return m_hasCamera && m_hasScene && m_hasConfig; }
+    bool canRender() const { return m_computeShaderProgram && m_hasCamera && m_hasScene && m_hasConfig; }
+    unsigned getComputeShaderId() const { return m_computeShaderProgram; }
 
     void setCurrentCamera(const rt::Camera& camera);
     void setCurrentScene(const rt::Scene& scene);
@@ -23,9 +24,8 @@ public:
 
 private:
     int getUniformLoc(const char*) const;
-    void makeImage();
+    void makeOutImage();
     void makeBufferObjects();
-    void compileComputeShader();
 
 private:
     Vector2 m_windowSize;
@@ -38,6 +38,6 @@ private:
 
     int m_maxSphereCount;
     unsigned m_computeLocalSize;
-    unsigned m_computeShaderProgram;
-    unsigned m_sceneObjectsBuffer = -1;
+    unsigned m_computeShaderProgram = 0;
+    unsigned m_sceneObjectsBuffer = 0;
 };
