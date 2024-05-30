@@ -38,6 +38,9 @@ rt::Scene createScene_1() {
     rt::Sphere groundSphere = rt::Sphere({0, -6, 0}, 5.0, {255, 0, 255, 255});
     scene.spheres.push_back(groundSphere);
 
+    rt::Plane plane = rt::Plane({1.3, 0, 0}, {0, 0, 1}, {0, 1, 0}, {1.2, 1.2}, {150, 230, 60, 255});
+    scene.planes.push_back(plane);
+
     scene.backgroundColor = {210, 210, 210, 255};
     return scene;
 }
@@ -53,10 +56,10 @@ int main() {
     Renderer renderer({windowWidth, windowHeight}, {imageWidth, imageHeight});
 
     const int workgroupSize = 8;
-    const int maxSphereCount = 32; // Max number of spheres allowed IF using uniforms
-    const bool useBuffers = false; // Do not use uniforms, use buffers (large memory cap)
-    // if useBuffers is true, maxSphereCount is ignored
-    renderer.compileComputeShader(workgroupSize, maxSphereCount, useBuffers);
+    const int maxSphereCount = 32; // Max number of spheres allowed
+    const int maxPlaneCount = 5; // Max number of planes allowed
+    const bool useBuffers = false; // Do not use uniforms, use buffers (large memory size)
+    renderer.compileComputeShader(workgroupSize, maxSphereCount, maxPlaneCount, useBuffers);
 
     renderer.setCurrentCamera({
         .position = {0, 0, 6},

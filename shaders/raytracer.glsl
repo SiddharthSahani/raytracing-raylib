@@ -26,17 +26,28 @@ struct Sphere {
 };
 
 
+struct Plane {
+    vec3 center;
+    vec3 uDirection;
+    float uSize;
+    vec3 vDirection;
+    float vSize;
+    vec3 color;
+};
+
+
 struct HitRecord {
     vec3 worldPosition;
     vec3 worldNormal;
     float hitDistance;
-    int objectIndex;
+    vec3 color;
 };
 
 
 struct SceneInfo {
     vec3 backgroundColor;
     int numSpheres;
+    int numPlanes;
 };
 
 
@@ -57,17 +68,26 @@ uniform int frameIndex;
 
 #if USE_UNIFORM_OBJECTS
 
-    struct SceneObjects {
-        Sphere spheres[MAX_SPHERE_COUNT];
+    struct SceneSpheres {
+        Sphere data[MAX_SPHERE_COUNT];
     };
 
-    uniform SceneObjects sceneObjects;
+    struct ScenePlanes {
+        Plane data[5];
+    };
+
+    uniform SceneSpheres sceneSpheres;
+    uniform ScenePlanes scenePlanes;
 
 #else
 
-    layout (std430, binding = 1) readonly buffer sceneObjectsBlock {
-        Sphere spheres[];
-    } sceneObjects;
+    layout (std430, binding = 1) readonly buffer sceneSpheresBlock {
+        Sphere data[];
+    } sceneSpheres;
+
+    layout (std430, binding = 2) readonly buffer scenePlanesBlock {
+        Plane data[];
+    } scenePlanes;
 
 #endif
 
@@ -98,7 +118,7 @@ vec3 randomDirection(inout uint state) {
 
 // ----- INTERSECTION FUNCTIONS -----
 
-bool hitSphere(Sphere sphere, Ray ray, out HitRecord record) {
+bool hit(Sphere sphere, Ray ray, out HitRecord record) {
     vec3 oc = ray.origin - sphere.position;
     float a = dot(ray.direction, ray.direction);
     float b = 2.0 * dot(oc, ray.direction);
@@ -116,6 +136,36 @@ bool hitSphere(Sphere sphere, Ray ray, out HitRecord record) {
         record.worldNormal = normalize(record.worldPosition - sphere.position);
         record.hitDistance = t;
         return true;
+    }
+
+    return false;
+}
+
+
+bool hit(Plane plane, Ray ray, out HitRecord record) {
+    vec3 planeNormal = cross(plane.uDirection, plane.vDirection);
+
+    float denom = dot(planeNormal, ray.direction);
+    if (denom > 0.00001) {
+        return false;
+    }
+
+    float t = dot(plane.center - ray.origin, planeNormal) / denom;
+
+    if (t > 0.0 && t < record.hitDistance) {
+        vec3 p = ray.origin + t * ray.direction;
+        vec3 dir = p - plane.center;
+
+        float u = dot(dir, plane.uDirection);
+        float v = dot(dir, plane.vDirection);
+
+        if (u > -plane.uSize && u < plane.uSize && v > -plane.vSize && v < plane.vSize) {
+            // uv = (vec2(u, v) + vec2(plane.uSize, plane.vSize)) / (2 * vec2(plane.uSize, plane.vSize));
+            record.worldPosition = p;
+            record.worldNormal = planeNormal;
+            record.hitDistance = t;
+            return true;
+        }
     }
 
     return false;
@@ -143,9 +193,16 @@ HitRecord traceRay(Ray ray) {
     record.hitDistance = FLT_MAX;
 
     for (int i = 0; i < sceneInfo.numSpheres; i++) {
-        bool closer = hitSphere(sceneObjects.spheres[i], ray, record);
+        bool closer = hit(sceneSpheres.data[i], ray, record);
         if (closer) {
-            record.objectIndex = i;
+            record.color = sceneSpheres.data[i].color;
+        }
+    }
+
+    for (int i = 0; i < sceneInfo.numPlanes; i++) {
+        bool closer = hit(scenePlanes.data[i], ray, record);
+        if (closer) {
+            record.color = scenePlanes.data[i].color;
         }
     }
 
@@ -166,7 +223,7 @@ vec3 perPixel(inout uint rngState) {
             break;
         }
 
-        contribution *= sceneObjects.spheres[record.objectIndex].color;
+        contribution *= record.color;
 
         ray.origin = record.worldPosition + record.worldNormal * 0.001;
         // ray.direction = reflect(ray.direction, record.worldNormal);
