@@ -20,8 +20,9 @@ rt::Scene createRandomScene(int numSpheres) {
             GetRandomValue(0, 255),
             255,
         };
+        float roughness = GetRandomValue(2, 10) / 10.0f;
 
-        scene.spheres.push_back(rt::Sphere{pos, rad, col});
+        scene.spheres.push_back(rt::Sphere{pos, rad, col, roughness});
     }
 
     scene.backgroundColor = {210, 210, 240, 255};
@@ -32,13 +33,13 @@ rt::Scene createRandomScene(int numSpheres) {
 rt::Scene createScene_1() {
     rt::Scene scene;
 
-    rt::Sphere centerSphere = rt::Sphere({0, 0, 0}, 1.0, {50, 230, 200, 255});
+    rt::Sphere centerSphere = rt::Sphere({0, 0, 0}, 1.0, {50, 230, 200, 255}, 0.0);
     scene.spheres.push_back(centerSphere);
 
-    rt::Sphere groundSphere = rt::Sphere({0, -6, 0}, 5.0, {255, 0, 255, 255});
+    rt::Sphere groundSphere = rt::Sphere({0, -6, 0}, 5.0, {255, 0, 255, 255}, 0.4);
     scene.spheres.push_back(groundSphere);
 
-    rt::Plane plane = rt::Plane({1.3, 0, 0}, {0, 0, 1}, {0, 1, 0}, {1.2, 1.2}, {150, 230, 60, 255});
+    rt::Plane plane = rt::Plane({1.3, 0, -1}, {0.7, 0, 1}, {0, 1, 0}, {1.2, 1.2}, {220, 220, 220, 255}, 1.0);
     scene.planes.push_back(plane);
 
     scene.backgroundColor = {210, 210, 210, 255};

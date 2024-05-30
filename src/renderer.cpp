@@ -72,8 +72,8 @@ void Renderer::compileComputeShader(unsigned computeLocalSize, unsigned maxSpher
     };
 
     replaceFn("WG_SIZE", TextFormat("%d", m_computeLocalSize));
-    replaceFn("MAX_SPHERE_COUNT", TextFormat("%d", m_maxSphereCount));
-    replaceFn("MAX_PLANE_COUNT", TextFormat("%d", m_maxPlaneCount));
+    replaceFn("MAX_SPHERE_COUNT", TextFormat("%d", std::max(1, m_maxSphereCount)));
+    replaceFn("MAX_PLANE_COUNT", TextFormat("%d", std::max(1, m_maxPlaneCount)));
 
     if (m_usingBuffers) {
         replaceFn("USE_UNIFORM_OBJECTS", TextFormat("%d", 0));
@@ -139,10 +139,12 @@ void Renderer::setCurrentScene(const rt::Scene& scene) {
             unsigned shaderLoc_radius =
                 getUniformLoc(TextFormat("sceneSpheres.data[%d].radius", i));
             unsigned shaderLoc_color = getUniformLoc(TextFormat("sceneSpheres.data[%d].color", i));
+            unsigned shaderLoc_roughness = getUniformLoc(TextFormat("sceneSpheres.data[%d].roughness", i));
 
             rlSetUniform(shaderLoc_pos, &scene.spheres[i].position, RL_SHADER_UNIFORM_VEC3, 1);
             rlSetUniform(shaderLoc_radius, &scene.spheres[i].radius, RL_SHADER_UNIFORM_FLOAT, 1);
             rlSetUniform(shaderLoc_color, &scene.spheres[i].color, RL_SHADER_UNIFORM_VEC3, 1);
+            rlSetUniform(shaderLoc_roughness, &scene.spheres[i].roughness, RL_SHADER_UNIFORM_FLOAT, 1);
         }
 
         for (int i = 0; i < numPlanes; i++) {
@@ -154,6 +156,7 @@ void Renderer::setCurrentScene(const rt::Scene& scene) {
                 getUniformLoc(TextFormat("scenePlanes.data[%d].vDirection", i));
             unsigned shaderLoc_vSize = getUniformLoc(TextFormat("scenePlanes.data[%d].vSize", i));
             unsigned shaderLoc_color = getUniformLoc(TextFormat("scenePlanes.data[%d].color", i));
+            unsigned shaderLoc_roughness = getUniformLoc(TextFormat("scenePlanes.data[%d].roughness", i));
 
             rlSetUniform(shaderLoc_center, &scene.planes[i].center, RL_SHADER_UNIFORM_VEC3, 1);
             rlSetUniform(shaderLoc_uDir, &scene.planes[i].uDirection, RL_SHADER_UNIFORM_VEC3, 1);
@@ -161,6 +164,7 @@ void Renderer::setCurrentScene(const rt::Scene& scene) {
             rlSetUniform(shaderLoc_vDir, &scene.planes[i].vDirection, RL_SHADER_UNIFORM_VEC3, 1);
             rlSetUniform(shaderLoc_vSize, &scene.planes[i].vSize, RL_SHADER_UNIFORM_FLOAT, 1);
             rlSetUniform(shaderLoc_color, &scene.planes[i].color, RL_SHADER_UNIFORM_VEC3, 1);
+            rlSetUniform(shaderLoc_roughness, &scene.planes[i].roughness, RL_SHADER_UNIFORM_FLOAT, 1);
         }
 
     } else {

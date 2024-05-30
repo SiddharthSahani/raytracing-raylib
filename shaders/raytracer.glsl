@@ -23,6 +23,7 @@ struct Sphere {
     vec3 position;
     float radius;
     vec3 color;
+    float roughness;
 };
 
 
@@ -33,6 +34,7 @@ struct Plane {
     vec3 vDirection;
     float vSize;
     vec3 color;
+    float roughness;
 };
 
 
@@ -41,6 +43,7 @@ struct HitRecord {
     vec3 worldNormal;
     float hitDistance;
     vec3 color;
+    float roughness;
 };
 
 
@@ -73,7 +76,7 @@ uniform int frameIndex;
     };
 
     struct ScenePlanes {
-        Plane data[5];
+        Plane data[MAX_PLANE_COUNT];
     };
 
     uniform SceneSpheres sceneSpheres;
@@ -135,6 +138,8 @@ bool hit(Sphere sphere, Ray ray, out HitRecord record) {
         record.worldPosition = ray.origin + ray.direction * t;
         record.worldNormal = normalize(record.worldPosition - sphere.position);
         record.hitDistance = t;
+        record.color = sphere.color;
+        record.roughness = sphere.roughness;
         return true;
     }
 
@@ -164,6 +169,8 @@ bool hit(Plane plane, Ray ray, out HitRecord record) {
             record.worldPosition = p;
             record.worldNormal = planeNormal;
             record.hitDistance = t;
+            record.color = plane.color;
+            record.roughness = plane.roughness;
             return true;
         }
     }
@@ -193,17 +200,11 @@ HitRecord traceRay(Ray ray) {
     record.hitDistance = FLT_MAX;
 
     for (int i = 0; i < sceneInfo.numSpheres; i++) {
-        bool closer = hit(sceneSpheres.data[i], ray, record);
-        if (closer) {
-            record.color = sceneSpheres.data[i].color;
-        }
+        hit(sceneSpheres.data[i], ray, record);
     }
 
     for (int i = 0; i < sceneInfo.numPlanes; i++) {
-        bool closer = hit(scenePlanes.data[i], ray, record);
-        if (closer) {
-            record.color = scenePlanes.data[i].color;
-        }
+        hit(scenePlanes.data[i], ray, record);
     }
 
     return record;
@@ -225,9 +226,11 @@ vec3 perPixel(inout uint rngState) {
 
         contribution *= record.color;
 
+        vec3 diffuseDir = normalize(record.worldNormal + randomDirection(rngState));
+        vec3 specularDir = reflect(ray.direction, record.worldNormal);
+
         ray.origin = record.worldPosition + record.worldNormal * 0.001;
-        // ray.direction = reflect(ray.direction, record.worldNormal);
-        ray.direction = normalize(record.worldNormal + randomDirection(rngState));
+        ray.direction = normalize(mix(diffuseDir, specularDir, record.roughness));
     }
 
     return light;
