@@ -45,10 +45,15 @@ void Renderer::makeOutImage() {
 
 
 void Renderer::makeBufferObjects() {
-    m_sceneSpheresBuffer =
-        rlLoadShaderBuffer(sizeof(rt::Sphere) * m_maxSphereCount, nullptr, RL_DYNAMIC_COPY);
-    m_scenePlanesBuffer =
-        rlLoadShaderBuffer(sizeof(rt::Plane) * m_maxPlaneCount, nullptr, RL_DYNAMIC_COPY);
+    m_sceneMaterialsBuffer = rlLoadShaderBuffer(
+        sizeof(rt::Material) * (m_maxSphereCount + m_maxPlaneCount), nullptr, RL_DYNAMIC_COPY);
+
+    if (m_usingBuffers) {
+        m_sceneSpheresBuffer =
+            rlLoadShaderBuffer(sizeof(rt::Sphere) * m_maxSphereCount, nullptr, RL_DYNAMIC_COPY);
+        m_scenePlanesBuffer =
+            rlLoadShaderBuffer(sizeof(rt::Plane) * m_maxPlaneCount, nullptr, RL_DYNAMIC_COPY);
+    }
 }
 
 
@@ -59,9 +64,7 @@ void Renderer::compileComputeShader(unsigned computeLocalSize, unsigned maxSpher
     m_maxPlaneCount = maxPlaneCount;
     m_usingBuffers = useBuffers;
 
-    if (useBuffers) {
-        makeBufferObjects();
-    }
+    makeBufferObjects();
 
     char* fileText = LoadFileText("shaders/raytracer.glsl");
 
@@ -103,8 +106,9 @@ void Renderer::runComputeShader() {
     rlEnableShader(m_computeShaderProgram);
     rlSetUniform(shaderLoc_frameIndex, &frameIndex, RL_SHADER_UNIFORM_INT, 1);
     rlBindImageTexture(m_outImage.id, 0, RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32, false);
-    rlBindShaderBuffer(m_sceneSpheresBuffer, 1);
-    rlBindShaderBuffer(m_scenePlanesBuffer, 2);
+    rlBindShaderBuffer(m_sceneMaterialsBuffer, 1);
+    rlBindShaderBuffer(m_sceneSpheresBuffer, 2);
+    rlBindShaderBuffer(m_scenePlanesBuffer, 3);
     rlComputeShaderDispatch(groupX, groupY, 1);
 }
 
@@ -132,19 +136,22 @@ void Renderer::setCurrentScene(const rt::Scene& scene) {
         numPlanes = std::min(numPlanes, m_maxPlaneCount);
     }
 
+    int sceneMaterialsSize = sizeof(rt::Material) * (numSpheres + numPlanes);
+    rlUpdateShaderBuffer(m_sceneMaterialsBuffer, scene.materials.data(), sceneMaterialsSize, 0);
+
     if (!m_usingBuffers) {
 
         for (int i = 0; i < numSpheres; i++) {
             unsigned shaderLoc_pos = getUniformLoc(TextFormat("sceneSpheres.data[%d].position", i));
             unsigned shaderLoc_radius =
                 getUniformLoc(TextFormat("sceneSpheres.data[%d].radius", i));
-            unsigned shaderLoc_color = getUniformLoc(TextFormat("sceneSpheres.data[%d].color", i));
-            unsigned shaderLoc_roughness = getUniformLoc(TextFormat("sceneSpheres.data[%d].roughness", i));
+            unsigned shaderLoc_matIdx =
+                getUniformLoc(TextFormat("sceneSpheres.data[%d].materialIndex", i));
 
             rlSetUniform(shaderLoc_pos, &scene.spheres[i].position, RL_SHADER_UNIFORM_VEC3, 1);
             rlSetUniform(shaderLoc_radius, &scene.spheres[i].radius, RL_SHADER_UNIFORM_FLOAT, 1);
-            rlSetUniform(shaderLoc_color, &scene.spheres[i].color, RL_SHADER_UNIFORM_VEC3, 1);
-            rlSetUniform(shaderLoc_roughness, &scene.spheres[i].roughness, RL_SHADER_UNIFORM_FLOAT, 1);
+            rlSetUniform(shaderLoc_matIdx, &scene.spheres[i].materialIndex, RL_SHADER_UNIFORM_INT,
+                         1);
         }
 
         for (int i = 0; i < numPlanes; i++) {
@@ -155,16 +162,16 @@ void Renderer::setCurrentScene(const rt::Scene& scene) {
             unsigned shaderLoc_vDir =
                 getUniformLoc(TextFormat("scenePlanes.data[%d].vDirection", i));
             unsigned shaderLoc_vSize = getUniformLoc(TextFormat("scenePlanes.data[%d].vSize", i));
-            unsigned shaderLoc_color = getUniformLoc(TextFormat("scenePlanes.data[%d].color", i));
-            unsigned shaderLoc_roughness = getUniformLoc(TextFormat("scenePlanes.data[%d].roughness", i));
+            unsigned shaderLoc_matIdx =
+                getUniformLoc(TextFormat("scenePlanes.data[%d].materialIndex", i));
 
             rlSetUniform(shaderLoc_center, &scene.planes[i].center, RL_SHADER_UNIFORM_VEC3, 1);
             rlSetUniform(shaderLoc_uDir, &scene.planes[i].uDirection, RL_SHADER_UNIFORM_VEC3, 1);
             rlSetUniform(shaderLoc_uSize, &scene.planes[i].uSize, RL_SHADER_UNIFORM_FLOAT, 1);
             rlSetUniform(shaderLoc_vDir, &scene.planes[i].vDirection, RL_SHADER_UNIFORM_VEC3, 1);
             rlSetUniform(shaderLoc_vSize, &scene.planes[i].vSize, RL_SHADER_UNIFORM_FLOAT, 1);
-            rlSetUniform(shaderLoc_color, &scene.planes[i].color, RL_SHADER_UNIFORM_VEC3, 1);
-            rlSetUniform(shaderLoc_roughness, &scene.planes[i].roughness, RL_SHADER_UNIFORM_FLOAT, 1);
+            rlSetUniform(shaderLoc_matIdx, &scene.planes[i].materialIndex, RL_SHADER_UNIFORM_INT,
+                         1);
         }
 
     } else {

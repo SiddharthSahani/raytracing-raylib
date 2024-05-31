@@ -22,28 +22,31 @@ struct Ray {
 struct Sphere {
     vec3 position;
     float radius;
-    vec3 color;
-    float roughness;
+    int materialIndex;
 };
 
 
 struct Plane {
     vec3 center;
+    int materialIndex;
     vec3 uDirection;
     float uSize;
     vec3 vDirection;
     float vSize;
-    vec3 color;
+};
+
+
+struct Material {
+    vec3 albedo;
     float roughness;
 };
 
 
 struct HitRecord {
     vec3 worldPosition;
-    vec3 worldNormal;
     float hitDistance;
-    vec3 color;
-    float roughness;
+    vec3 worldNormal;
+    int materialIndex;
 };
 
 
@@ -63,6 +66,10 @@ struct Config {
 // ----- UNIFORMS AND BUFFERS -----
 
 layout (rgba32f, binding = 0) uniform image2D outImage;
+layout (std430, binding = 1) readonly buffer materialBlock {
+    Material data[];
+} materials;
+
 uniform Camera camera;
 uniform SceneInfo sceneInfo;
 uniform Config config;
@@ -84,11 +91,11 @@ uniform int frameIndex;
 
 #else
 
-    layout (std430, binding = 1) readonly buffer sceneSpheresBlock {
+    layout (std430, binding = 2) readonly buffer sceneSpheresBlock {
         Sphere data[];
     } sceneSpheres;
 
-    layout (std430, binding = 2) readonly buffer scenePlanesBlock {
+    layout (std430, binding = 3) readonly buffer scenePlanesBlock {
         Plane data[];
     } scenePlanes;
 
@@ -138,8 +145,7 @@ bool hit(Sphere sphere, Ray ray, out HitRecord record) {
         record.worldPosition = ray.origin + ray.direction * t;
         record.worldNormal = normalize(record.worldPosition - sphere.position);
         record.hitDistance = t;
-        record.color = sphere.color;
-        record.roughness = sphere.roughness;
+        record.materialIndex = sphere.materialIndex;
         return true;
     }
 
@@ -169,8 +175,7 @@ bool hit(Plane plane, Ray ray, out HitRecord record) {
             record.worldPosition = p;
             record.worldNormal = planeNormal;
             record.hitDistance = t;
-            record.color = plane.color;
-            record.roughness = plane.roughness;
+            record.materialIndex = plane.materialIndex;
             return true;
         }
     }
@@ -224,13 +229,13 @@ vec3 perPixel(inout uint rngState) {
             break;
         }
 
-        contribution *= record.color;
+        contribution *= materials.data[record.materialIndex].albedo;
 
         vec3 diffuseDir = normalize(record.worldNormal + randomDirection(rngState));
         vec3 specularDir = reflect(ray.direction, record.worldNormal);
 
         ray.origin = record.worldPosition + record.worldNormal * 0.001;
-        ray.direction = normalize(mix(diffuseDir, specularDir, record.roughness));
+        ray.direction = normalize(mix(specularDir, diffuseDir, materials.data[record.materialIndex].roughness));
     }
 
     return light;

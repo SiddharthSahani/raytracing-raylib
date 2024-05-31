@@ -44,6 +44,7 @@ private:
     unsigned m_computeLocalSize;
     unsigned m_computeShaderProgram = 0;
     bool m_usingBuffers;
+    unsigned m_sceneMaterialsBuffer = 0;
     unsigned m_sceneSpheresBuffer = 0;
     unsigned m_scenePlanesBuffer = 0;
 };
