@@ -46,22 +46,27 @@ void Renderer::makeOutImage() {
 
 void Renderer::makeBufferObjects() {
     m_sceneMaterialsBuffer = rlLoadShaderBuffer(
-        sizeof(rt::Material) * (m_maxSphereCount + m_maxPlaneCount), nullptr, RL_DYNAMIC_COPY);
+        sizeof(rt::Material) * (m_maxSphereCount + m_maxPlaneCount + m_maxTriangleCount), nullptr,
+        RL_DYNAMIC_COPY);
 
     if (m_usingBuffers) {
         m_sceneSpheresBuffer =
             rlLoadShaderBuffer(sizeof(rt::Sphere) * m_maxSphereCount, nullptr, RL_DYNAMIC_COPY);
         m_scenePlanesBuffer =
             rlLoadShaderBuffer(sizeof(rt::Plane) * m_maxPlaneCount, nullptr, RL_DYNAMIC_COPY);
+        m_sceneTrianglesBuffer =
+            rlLoadShaderBuffer(sizeof(rt::Triangle) * m_maxTriangleCount, nullptr, RL_DYNAMIC_COPY);
     }
 }
 
 
 void Renderer::compileComputeShader(unsigned computeLocalSize, unsigned maxSphereCount,
-                                    unsigned maxPlaneCount, bool useBuffers) {
+                                    unsigned maxPlaneCount, unsigned maxTriangleCount,
+                                    bool useBuffers) {
     m_computeLocalSize = computeLocalSize;
     m_maxSphereCount = maxSphereCount;
     m_maxPlaneCount = maxPlaneCount;
+    m_maxTriangleCount = maxTriangleCount;
     m_usingBuffers = useBuffers;
 
     makeBufferObjects();
@@ -77,6 +82,7 @@ void Renderer::compileComputeShader(unsigned computeLocalSize, unsigned maxSpher
     replaceFn("WG_SIZE", TextFormat("%d", m_computeLocalSize));
     replaceFn("MAX_SPHERE_COUNT", TextFormat("%d", std::max(1, m_maxSphereCount)));
     replaceFn("MAX_PLANE_COUNT", TextFormat("%d", std::max(1, m_maxPlaneCount)));
+    replaceFn("MAX_TRIANGLE_COUNT", TextFormat("%d", std::max(1, m_maxTriangleCount)));
 
     if (m_usingBuffers) {
         replaceFn("USE_UNIFORM_OBJECTS", TextFormat("%d", 0));
@@ -109,6 +115,7 @@ void Renderer::runComputeShader() {
     rlBindShaderBuffer(m_sceneMaterialsBuffer, 1);
     rlBindShaderBuffer(m_sceneSpheresBuffer, 2);
     rlBindShaderBuffer(m_scenePlanesBuffer, 3);
+    rlBindShaderBuffer(m_sceneTrianglesBuffer, 4);
     rlComputeShaderDispatch(groupX, groupY, 1);
 }
 
@@ -131,12 +138,14 @@ void Renderer::setCurrentScene(const rt::Scene& scene) {
 
     int numSpheres = scene.spheres.size();
     int numPlanes = scene.planes.size();
+    int numTriangles = scene.triangles.size();
     if (!m_usingBuffers) {
         numSpheres = std::min(numSpheres, m_maxSphereCount);
         numPlanes = std::min(numPlanes, m_maxPlaneCount);
+        numTriangles = std::min(numTriangles, m_maxTriangleCount);
     }
 
-    int sceneMaterialsSize = sizeof(rt::Material) * (numSpheres + numPlanes);
+    int sceneMaterialsSize = sizeof(rt::Material) * (numSpheres + numPlanes + numTriangles);
     rlUpdateShaderBuffer(m_sceneMaterialsBuffer, scene.materials.data(), sceneMaterialsSize, 0);
 
     if (!m_usingBuffers) {
@@ -174,23 +183,41 @@ void Renderer::setCurrentScene(const rt::Scene& scene) {
                          1);
         }
 
+        for (int i = 0; i < numTriangles; i++) {
+            unsigned shaderLoc_v0 = getUniformLoc(TextFormat("sceneTriangles.data[%d].v0", i));
+            unsigned shaderLoc_v1 = getUniformLoc(TextFormat("sceneTriangles.data[%d].v1", i));
+            unsigned shaderLoc_v2 = getUniformLoc(TextFormat("sceneTriangles.data[%d].v2", i));
+            unsigned shaderLoc_matIdx =
+                getUniformLoc(TextFormat("sceneTriangles.data[%d].materialIndex", i));
+
+            rlSetUniform(shaderLoc_v0, &scene.triangles[i].v0, RL_SHADER_UNIFORM_VEC3, 1);
+            rlSetUniform(shaderLoc_v1, &scene.triangles[i].v1, RL_SHADER_UNIFORM_VEC3, 1);
+            rlSetUniform(shaderLoc_v2, &scene.triangles[i].v2, RL_SHADER_UNIFORM_VEC3, 1);
+            rlSetUniform(shaderLoc_matIdx, &scene.triangles[i].materialIndex, RL_SHADER_UNIFORM_INT,
+                         1);
+        }
+
     } else {
 
         int sceneSpheresSize = sizeof(rt::Sphere) * numSpheres;
         int scenePlanesSize = sizeof(rt::Plane) * numPlanes;
+        int sceneTrianglesSize = sizeof(rt::Triangle) * numTriangles;
         rlUpdateShaderBuffer(m_sceneSpheresBuffer, scene.spheres.data(), sceneSpheresSize, 0);
         rlUpdateShaderBuffer(m_scenePlanesBuffer, scene.planes.data(), scenePlanesSize, 0);
+        rlUpdateShaderBuffer(m_sceneTrianglesBuffer, scene.triangles.data(), sceneTrianglesSize, 0);
     }
 
     unsigned shaderLoc_backgroundColor = getUniformLoc("sceneInfo.backgroundColor");
     unsigned shaderLoc_numSpheres = getUniformLoc("sceneInfo.numSpheres");
     unsigned shaderLoc_numPlanes = getUniformLoc("sceneInfo.numPlanes");
+    unsigned shaderLoc_numTriangles = getUniformLoc("sceneInfo.numTriangles");
 
     Vector4 backgroundColorVec = ColorNormalize(scene.backgroundColor);
 
     rlSetUniform(shaderLoc_backgroundColor, &backgroundColorVec, RL_SHADER_UNIFORM_VEC3, 1);
     rlSetUniform(shaderLoc_numSpheres, &numSpheres, RL_SHADER_UNIFORM_INT, 1);
     rlSetUniform(shaderLoc_numPlanes, &numPlanes, RL_SHADER_UNIFORM_INT, 1);
+    rlSetUniform(shaderLoc_numTriangles, &numTriangles, RL_SHADER_UNIFORM_INT, 1);
 }
 
 

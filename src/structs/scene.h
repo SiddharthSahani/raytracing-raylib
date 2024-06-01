@@ -12,6 +12,7 @@ namespace rt {
 struct Scene {
     std::vector<Sphere> spheres;
     std::vector<Plane> planes;
+    std::vector<Triangle> triangles;
     std::vector<Material> materials;
     Color backgroundColor;
 };

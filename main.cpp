@@ -57,6 +57,11 @@ rt::Scene createScene_1() {
         scene.planes.push_back(plane);
     }
 
+    {
+        rt::Triangle triangle = rt::Triangle({-1.3, 0, -1.2}, {-2, 1.1, 1}, {-2, -1.1, 1}, 2);
+        scene.triangles.push_back(triangle);
+    }
+
     scene.backgroundColor = {210, 210, 210, 255};
     return scene;
 }
@@ -74,8 +79,9 @@ int main() {
     const int workgroupSize = 8;
     const int maxSphereCount = 32; // Max number of spheres allowed
     const int maxPlaneCount = 5; // Max number of planes allowed
+    const int maxTriangleCount = 5; // Max number of triangles allowed
     const bool useBuffers = false; // Do not use uniforms, use buffers (large memory size)
-    renderer.compileComputeShader(workgroupSize, maxSphereCount, maxPlaneCount, useBuffers);
+    renderer.compileComputeShader(workgroupSize, maxSphereCount, maxPlaneCount, maxTriangleCount, useBuffers);
 
     renderer.setCurrentCamera({
         .position = {0, 0, 6},

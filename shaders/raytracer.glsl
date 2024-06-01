@@ -36,6 +36,14 @@ struct Plane {
 };
 
 
+struct Triangle {
+    vec3 v0;
+    vec3 v1;
+    vec3 v2;
+    int materialIndex;
+};
+
+
 struct Material {
     vec3 albedo;
     float roughness;
@@ -54,6 +62,7 @@ struct SceneInfo {
     vec3 backgroundColor;
     int numSpheres;
     int numPlanes;
+    int numTriangles;
 };
 
 
@@ -86,8 +95,13 @@ uniform int frameIndex;
         Plane data[MAX_PLANE_COUNT];
     };
 
+    struct SceneTriangles {
+        Triangle data[MAX_TRIANGLE_COUNT];
+    };
+
     uniform SceneSpheres sceneSpheres;
     uniform ScenePlanes scenePlanes;
+    uniform SceneTriangles sceneTriangles;
 
 #else
 
@@ -98,6 +112,10 @@ uniform int frameIndex;
     layout (std430, binding = 3) readonly buffer scenePlanesBlock {
         Plane data[];
     } scenePlanes;
+
+    layout (std430, binding = 4) readonly buffer sceneTrianglesBlock {
+        Triangle data[];
+    } sceneTriangles;
 
 #endif
 
@@ -133,9 +151,9 @@ bool hit(Sphere sphere, Ray ray, out HitRecord record) {
     float a = dot(ray.direction, ray.direction);
     float b = 2.0 * dot(oc, ray.direction);
     float c = dot(oc, oc) - sphere.radius * sphere.radius;
-    float d = b * b - 4 * a * c;
+    float d = b * b - 4.0 * a * c;
 
-    if (d < 0.0f) {
+    if (d < 0.0) {
         return false;
     }
 
@@ -184,6 +202,41 @@ bool hit(Plane plane, Ray ray, out HitRecord record) {
 }
 
 
+bool hit(Triangle triangle, Ray ray, out HitRecord record) {
+    vec3 v0v1 = triangle.v1 - triangle.v0;
+    vec3 v0v2 = triangle.v2 - triangle.v0;
+    vec3 pvec = cross(ray.direction, v0v2);
+
+    float det = dot(v0v1, pvec);
+    if (abs(det) < 0.00001) {
+        return false;
+    }
+
+    float invDet = 1.0 / det;
+    vec3 tvec = ray.origin - triangle.v0;
+    float u = dot(tvec, pvec) * invDet;
+    if (u < 0.0 || u > 1.0) {
+        return false;
+    }
+
+    vec3 qvec = cross(tvec, v0v1);
+    float v = dot(ray.direction, qvec) * invDet;
+    if (v < 0.0 || u + v > 1.0) {
+        return false;
+    }
+
+    float t = dot(v0v2, qvec) * invDet;
+    if (t > 0.0 && t < record.hitDistance) {
+        record.worldPosition = ray.origin + ray.direction * t;
+        record.hitDistance = t;
+        record.worldNormal = normalize(cross(v0v1, v0v2));
+        record.materialIndex = triangle.materialIndex;
+        return true;
+    }
+
+    return false;
+}
+
 // ----- MAIN FUNCTIONS -----
 
 Ray genRay() {
@@ -210,6 +263,10 @@ HitRecord traceRay(Ray ray) {
 
     for (int i = 0; i < sceneInfo.numPlanes; i++) {
         hit(scenePlanes.data[i], ray, record);
+    }
+
+    for (int i = 0; i < sceneInfo.numTriangles; i++) {
+        hit(sceneTriangles.data[i], ray, record);
     }
 
     return record;

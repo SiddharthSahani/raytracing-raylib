@@ -13,7 +13,7 @@ public:
     ~Renderer();
     void draw() const;
     void compileComputeShader(unsigned computeLocalSize, unsigned maxSphereCount,
-                              unsigned maxPlaneCount, bool useBuffers);
+                              unsigned maxPlaneCount, unsigned maxTriangleCount, bool useBuffers);
     void runComputeShader();
 
     bool canRender() const {
@@ -39,12 +39,16 @@ private:
     bool m_hasScene = false;
     bool m_hasConfig = false;
 
-    int m_maxSphereCount;
-    int m_maxPlaneCount;
     unsigned m_computeLocalSize;
     unsigned m_computeShaderProgram = 0;
     bool m_usingBuffers;
+
+    int m_maxSphereCount;
+    int m_maxPlaneCount;
+    int m_maxTriangleCount;
+
     unsigned m_sceneMaterialsBuffer = 0;
     unsigned m_sceneSpheresBuffer = 0;
     unsigned m_scenePlanesBuffer = 0;
+    unsigned m_sceneTrianglesBuffer = 0;
 };
