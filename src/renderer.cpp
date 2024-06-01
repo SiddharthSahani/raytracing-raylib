@@ -31,8 +31,14 @@ void Renderer::draw() const {
 }
 
 
-int Renderer::getUniformLoc(const char* uniformName) const {
+template <class... Args> int Renderer::getUniformLoc(const char* fmt, Args... args) const {
+    const char* uniformName = TextFormat(fmt, args...);
     return rlGetLocationUniform(m_computeShaderProgram, uniformName);
+}
+
+
+bool Renderer::canRender() const {
+    return m_computeShaderProgram && m_hasCamera && m_hasScene && m_hasConfig;
 }
 
 
@@ -45,49 +51,45 @@ void Renderer::makeOutImage() {
 
 
 void Renderer::makeBufferObjects() {
-    m_sceneMaterialsBuffer = rlLoadShaderBuffer(
-        sizeof(rt::Material) * (m_maxSphereCount + m_maxPlaneCount + m_maxTriangleCount), nullptr,
-        RL_DYNAMIC_COPY);
+    const int totalObjects = m_compileParams.maxSphereCount + m_compileParams.maxPlaneCount +
+                             m_compileParams.maxTriangleCount;
+    m_sceneMaterialsBuffer =
+        rlLoadShaderBuffer(sizeof(rt::Material) * totalObjects, nullptr, RL_DYNAMIC_COPY);
 
-    if (m_usingBuffers) {
-        m_sceneSpheresBuffer =
-            rlLoadShaderBuffer(sizeof(rt::Sphere) * m_maxSphereCount, nullptr, RL_DYNAMIC_COPY);
-        m_scenePlanesBuffer =
-            rlLoadShaderBuffer(sizeof(rt::Plane) * m_maxPlaneCount, nullptr, RL_DYNAMIC_COPY);
-        m_sceneTrianglesBuffer =
-            rlLoadShaderBuffer(sizeof(rt::Triangle) * m_maxTriangleCount, nullptr, RL_DYNAMIC_COPY);
+    if (m_compileParams.storageType == SceneStorageType::Buffers) {
+        m_sceneSpheresBuffer = rlLoadShaderBuffer(
+            sizeof(rt::Sphere) * m_compileParams.maxSphereCount, nullptr, RL_DYNAMIC_COPY);
+        m_scenePlanesBuffer = rlLoadShaderBuffer(sizeof(rt::Plane) * m_compileParams.maxPlaneCount,
+                                                 nullptr, RL_DYNAMIC_COPY);
+        m_sceneTrianglesBuffer = rlLoadShaderBuffer(
+            sizeof(rt::Triangle) * m_compileParams.maxTriangleCount, nullptr, RL_DYNAMIC_COPY);
     }
 }
 
 
-void Renderer::compileComputeShader(unsigned computeLocalSize, unsigned maxSphereCount,
-                                    unsigned maxPlaneCount, unsigned maxTriangleCount,
-                                    bool useBuffers) {
-    m_computeLocalSize = computeLocalSize;
-    m_maxSphereCount = maxSphereCount;
-    m_maxPlaneCount = maxPlaneCount;
-    m_maxTriangleCount = maxTriangleCount;
-    m_usingBuffers = useBuffers;
+void Renderer::compileComputeShader(CompileShaderParams _params) {
+    m_compileParams = _params;
 
     makeBufferObjects();
 
     char* fileText = LoadFileText("shaders/raytracer.glsl");
 
-    auto replaceFn = [&](const char* replaceStr, const char* byStr) {
+    auto replaceFn = [&](const char* replaceStr, int number) {
+        const char* byStr = TextFormat("%d", number);
         char* temp = TextReplace(fileText, replaceStr, byStr);
         UnloadFileText(fileText);
         fileText = temp;
     };
 
-    replaceFn("WG_SIZE", TextFormat("%d", m_computeLocalSize));
-    replaceFn("MAX_SPHERE_COUNT", TextFormat("%d", std::max(1, m_maxSphereCount)));
-    replaceFn("MAX_PLANE_COUNT", TextFormat("%d", std::max(1, m_maxPlaneCount)));
-    replaceFn("MAX_TRIANGLE_COUNT", TextFormat("%d", std::max(1, m_maxTriangleCount)));
+    replaceFn("WG_SIZE", m_compileParams.workgroupSize);
+    replaceFn("MAX_SPHERE_COUNT", std::max(1u, m_compileParams.maxSphereCount));
+    replaceFn("MAX_PLANE_COUNT", std::max(1u, m_compileParams.maxPlaneCount));
+    replaceFn("MAX_TRIANGLE_COUNT", std::max(1u, m_compileParams.maxTriangleCount));
 
-    if (m_usingBuffers) {
-        replaceFn("USE_UNIFORM_OBJECTS", TextFormat("%d", 0));
+    if (m_compileParams.storageType == SceneStorageType::Buffers) {
+        replaceFn("USE_UNIFORM_OBJECTS", 0);
     } else {
-        replaceFn("USE_UNIFORM_OBJECTS", TextFormat("%d", 1));
+        replaceFn("USE_UNIFORM_OBJECTS", 1);
     }
 
     unsigned shaderId = rlCompileShader(fileText, RL_COMPUTE_SHADER);
@@ -106,16 +108,18 @@ void Renderer::runComputeShader() {
     static int frameIndex = 0;
     frameIndex++;
 
-    const int groupX = m_imageSize.x / m_computeLocalSize;
-    const int groupY = m_imageSize.y / m_computeLocalSize;
+    const int groupX = m_imageSize.x / m_compileParams.workgroupSize;
+    const int groupY = m_imageSize.y / m_compileParams.workgroupSize;
 
     rlEnableShader(m_computeShaderProgram);
+
     rlSetUniform(shaderLoc_frameIndex, &frameIndex, RL_SHADER_UNIFORM_INT, 1);
     rlBindImageTexture(m_outImage.id, 0, RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32, false);
     rlBindShaderBuffer(m_sceneMaterialsBuffer, 1);
     rlBindShaderBuffer(m_sceneSpheresBuffer, 2);
     rlBindShaderBuffer(m_scenePlanesBuffer, 3);
     rlBindShaderBuffer(m_sceneTrianglesBuffer, 4);
+
     rlComputeShaderDispatch(groupX, groupY, 1);
 }
 
@@ -136,26 +140,24 @@ void Renderer::setCurrentScene(const rt::Scene& scene) {
     rlEnableShader(m_computeShaderProgram);
     m_hasScene = true;
 
-    int numSpheres = scene.spheres.size();
-    int numPlanes = scene.planes.size();
-    int numTriangles = scene.triangles.size();
-    if (!m_usingBuffers) {
-        numSpheres = std::min(numSpheres, m_maxSphereCount);
-        numPlanes = std::min(numPlanes, m_maxPlaneCount);
-        numTriangles = std::min(numTriangles, m_maxTriangleCount);
+    unsigned numSpheres = scene.spheres.size();
+    unsigned numPlanes = scene.planes.size();
+    unsigned numTriangles = scene.triangles.size();
+    if (m_compileParams.storageType == SceneStorageType::Uniforms) {
+        numSpheres = std::min(numSpheres, m_compileParams.maxSphereCount);
+        numPlanes = std::min(numPlanes, m_compileParams.maxPlaneCount);
+        numTriangles = std::min(numTriangles, m_compileParams.maxTriangleCount);
     }
 
     int sceneMaterialsSize = sizeof(rt::Material) * (numSpheres + numPlanes + numTriangles);
     rlUpdateShaderBuffer(m_sceneMaterialsBuffer, scene.materials.data(), sceneMaterialsSize, 0);
 
-    if (!m_usingBuffers) {
+    if (m_compileParams.storageType == SceneStorageType::Uniforms) {
 
         for (int i = 0; i < numSpheres; i++) {
-            unsigned shaderLoc_pos = getUniformLoc(TextFormat("sceneSpheres.data[%d].position", i));
-            unsigned shaderLoc_radius =
-                getUniformLoc(TextFormat("sceneSpheres.data[%d].radius", i));
-            unsigned shaderLoc_matIdx =
-                getUniformLoc(TextFormat("sceneSpheres.data[%d].materialIndex", i));
+            unsigned shaderLoc_pos = getUniformLoc("sceneSpheres.data[%d].position", i);
+            unsigned shaderLoc_radius = getUniformLoc("sceneSpheres.data[%d].radius", i);
+            unsigned shaderLoc_matIdx = getUniformLoc("sceneSpheres.data[%d].materialIndex", i);
 
             rlSetUniform(shaderLoc_pos, &scene.spheres[i].position, RL_SHADER_UNIFORM_VEC3, 1);
             rlSetUniform(shaderLoc_radius, &scene.spheres[i].radius, RL_SHADER_UNIFORM_FLOAT, 1);
@@ -164,15 +166,12 @@ void Renderer::setCurrentScene(const rt::Scene& scene) {
         }
 
         for (int i = 0; i < numPlanes; i++) {
-            unsigned shaderLoc_center = getUniformLoc(TextFormat("scenePlanes.data[%d].center", i));
-            unsigned shaderLoc_uDir =
-                getUniformLoc(TextFormat("scenePlanes.data[%d].uDirection", i));
-            unsigned shaderLoc_uSize = getUniformLoc(TextFormat("scenePlanes.data[%d].uSize", i));
-            unsigned shaderLoc_vDir =
-                getUniformLoc(TextFormat("scenePlanes.data[%d].vDirection", i));
-            unsigned shaderLoc_vSize = getUniformLoc(TextFormat("scenePlanes.data[%d].vSize", i));
-            unsigned shaderLoc_matIdx =
-                getUniformLoc(TextFormat("scenePlanes.data[%d].materialIndex", i));
+            unsigned shaderLoc_center = getUniformLoc("scenePlanes.data[%d].center", i);
+            unsigned shaderLoc_uDir = getUniformLoc("scenePlanes.data[%d].uDirection", i);
+            unsigned shaderLoc_uSize = getUniformLoc("scenePlanes.data[%d].uSize", i);
+            unsigned shaderLoc_vDir = getUniformLoc("scenePlanes.data[%d].vDirection", i);
+            unsigned shaderLoc_vSize = getUniformLoc("scenePlanes.data[%d].vSize", i);
+            unsigned shaderLoc_matIdx = getUniformLoc("scenePlanes.data[%d].materialIndex", i);
 
             rlSetUniform(shaderLoc_center, &scene.planes[i].center, RL_SHADER_UNIFORM_VEC3, 1);
             rlSetUniform(shaderLoc_uDir, &scene.planes[i].uDirection, RL_SHADER_UNIFORM_VEC3, 1);
@@ -184,11 +183,10 @@ void Renderer::setCurrentScene(const rt::Scene& scene) {
         }
 
         for (int i = 0; i < numTriangles; i++) {
-            unsigned shaderLoc_v0 = getUniformLoc(TextFormat("sceneTriangles.data[%d].v0", i));
-            unsigned shaderLoc_v1 = getUniformLoc(TextFormat("sceneTriangles.data[%d].v1", i));
-            unsigned shaderLoc_v2 = getUniformLoc(TextFormat("sceneTriangles.data[%d].v2", i));
-            unsigned shaderLoc_matIdx =
-                getUniformLoc(TextFormat("sceneTriangles.data[%d].materialIndex", i));
+            unsigned shaderLoc_v0 = getUniformLoc("sceneTriangles.data[%d].v0", i);
+            unsigned shaderLoc_v1 = getUniformLoc("sceneTriangles.data[%d].v1", i);
+            unsigned shaderLoc_v2 = getUniformLoc("sceneTriangles.data[%d].v2", i);
+            unsigned shaderLoc_matIdx = getUniformLoc("sceneTriangles.data[%d].materialIndex", i);
 
             rlSetUniform(shaderLoc_v0, &scene.triangles[i].v0, RL_SHADER_UNIFORM_VEC3, 1);
             rlSetUniform(shaderLoc_v1, &scene.triangles[i].v1, RL_SHADER_UNIFORM_VEC3, 1);

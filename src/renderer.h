@@ -6,19 +6,31 @@
 #include "src/structs/scene.h"
 
 
+enum class SceneStorageType {
+    Uniforms,
+    Buffers,
+};
+
+
+struct CompileShaderParams {
+    unsigned workgroupSize;
+    SceneStorageType storageType;
+    unsigned maxSphereCount;
+    unsigned maxPlaneCount;
+    unsigned maxTriangleCount;
+};
+
+
 class Renderer {
 
 public:
     Renderer(Vector2 windowSize, Vector2 imageSize);
     ~Renderer();
     void draw() const;
-    void compileComputeShader(unsigned computeLocalSize, unsigned maxSphereCount,
-                              unsigned maxPlaneCount, unsigned maxTriangleCount, bool useBuffers);
+    void compileComputeShader(CompileShaderParams params);
     void runComputeShader();
 
-    bool canRender() const {
-        return m_computeShaderProgram && m_hasCamera && m_hasScene && m_hasConfig;
-    }
+    bool canRender() const;
     unsigned getComputeShaderId() const { return m_computeShaderProgram; }
 
     void setCurrentCamera(const rt::Camera& camera);
@@ -26,7 +38,7 @@ public:
     void setCurrentConfig(const rt::Config& config);
 
 private:
-    int getUniformLoc(const char*) const;
+    template <class... Args> int getUniformLoc(const char* fmt, Args... args) const;
     void makeOutImage();
     void makeBufferObjects();
 
@@ -39,13 +51,8 @@ private:
     bool m_hasScene = false;
     bool m_hasConfig = false;
 
-    unsigned m_computeLocalSize;
     unsigned m_computeShaderProgram = 0;
-    bool m_usingBuffers;
-
-    int m_maxSphereCount;
-    int m_maxPlaneCount;
-    int m_maxTriangleCount;
+    CompileShaderParams m_compileParams;
 
     unsigned m_sceneMaterialsBuffer = 0;
     unsigned m_sceneSpheresBuffer = 0;
