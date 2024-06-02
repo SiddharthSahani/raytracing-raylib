@@ -76,12 +76,6 @@ int main() {
 
     Renderer renderer({windowWidth, windowHeight}, {imageWidth, imageHeight});
 
-    const int workgroupSize = 8;
-    const int maxSphereCount = 32;  // Max number of spheres allowed
-    const int maxPlaneCount = 5;    // Max number of planes allowed
-    const int maxTriangleCount = 5; // Max number of triangles allowed
-    const bool useBuffers = false;  // Do not use uniforms, use buffers (large memory size)
-
     CompileShaderParams params = {
         .workgroupSize = 8,
         .storageType = SceneStorageType::Uniforms,

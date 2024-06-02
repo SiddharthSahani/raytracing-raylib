@@ -41,6 +41,9 @@ private:
     template <class... Args> int getUniformLoc(const char* fmt, Args... args) const;
     void makeOutImage();
     void makeBufferObjects();
+    void setScene_spheres(const rt::Scene& scene);
+    void setScene_planes(const rt::Scene& scene);
+    void setScene_triangles(const rt::Scene& scene);
 
 private:
     Vector2 m_windowSize;
