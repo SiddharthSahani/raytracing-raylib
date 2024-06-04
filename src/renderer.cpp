@@ -99,9 +99,11 @@ void Renderer::setCurrentCamera(const rt::Camera& camera) {
 
     const int uniLoc_position = getUniformLoc("camera.position");
     const int uniLoc_direction = getUniformLoc("camera.direction");
+    const int uniLoc_fov = getUniformLoc("camera.fov");
 
     rlSetUniform(uniLoc_position, &camera.position, RL_SHADER_UNIFORM_VEC3, 1);
     rlSetUniform(uniLoc_direction, &camera.direction, RL_SHADER_UNIFORM_VEC3, 1);
+    rlSetUniform(uniLoc_fov, &camera.fov, RL_SHADER_UNIFORM_FLOAT, 1);
 }
 
 

@@ -10,6 +10,7 @@ layout (local_size_x = WG_SIZE, local_size_y = WG_SIZE, local_size_z = 1) in;
 struct Camera {
     vec3 position;
     vec3 direction;
+    float fov;
 };
 
 
@@ -241,7 +242,7 @@ bool hit(Triangle triangle, Ray ray, out HitRecord record) {
 
 Ray genRay() {
     vec2 imgSize = imageSize(outImage);
-    vec2 coefficients = (gl_GlobalInvocationID.xy * 2.0 - imgSize) / imgSize.x;
+    vec2 coefficients = (gl_GlobalInvocationID.xy * 2.0 - imgSize) / imgSize.x * camera.fov;
 
     vec3 upDirection = vec3(0.0, 1.0, 0.0);
     vec3 rightDirection = cross(camera.direction, upDirection);

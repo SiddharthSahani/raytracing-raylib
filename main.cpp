@@ -7,6 +7,19 @@ rt::Scene createRandomScene(int numSpheres) {
 
     rt::Scene scene;
 
+    for (int i = 0; i < 5; i++) {
+        Color col = {
+            GetRandomValue(0, 255),
+            GetRandomValue(0, 255),
+            GetRandomValue(0, 255),
+            255,
+        };
+        float roughness = i / 4.0;
+
+        rt::Material material = rt::Material(col, roughness);
+        scene.materials.push_back(material);
+    }
+
     for (int i = 0; i < numSpheres; i++) {
         Vector3 pos = {
             GetRandomValue(-22000, 22000) / 10000.0f,
@@ -15,17 +28,7 @@ rt::Scene createRandomScene(int numSpheres) {
         };
         float rad = GetRandomValue(3000, 8000) / 10000.0f;
 
-        scene.spheres.push_back(rt::Sphere{pos, rad, i});
-
-        Color col = {
-            GetRandomValue(0, 255),
-            GetRandomValue(0, 255),
-            GetRandomValue(0, 255),
-            255,
-        };
-        float roughness = GetRandomValue(3, 8) / 10.0f;
-
-        scene.materials.push_back(rt::Material{col, roughness});
+        scene.spheres.push_back(rt::Sphere{pos, rad, GetRandomValue(0, 4)});
     }
 
     scene.backgroundColor = {210, 210, 240, 255};
@@ -91,6 +94,7 @@ int main() {
     renderer.setCurrentCamera({
         .position = {0, 0, 6},
         .direction = {0, 0, -1},
+        .fov = 60 * DEG2RAD,
     });
     renderer.setCurrentConfig({
         .bounceLimit = 5,
@@ -100,6 +104,7 @@ int main() {
     // renderer.setCurrentScene(createRandomScene(16));
     renderer.setCurrentScene(createScene_1());
 
+    // SetTargetFPS(0);
     while (!WindowShouldClose()) {
         renderer.runComputeShader();
         renderer.draw();
