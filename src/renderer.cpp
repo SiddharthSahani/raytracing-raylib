@@ -77,7 +77,7 @@ void Renderer::runComputeShader() {
     rlEnableShader(m_computeShaderProgram);
 
     rlSetUniform(uniLoc_frameIndex, &m_frameIndex, RL_SHADER_UNIFORM_INT, 1);
-    rlBindImageTexture(m_outImage.id, 0, RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32, false);
+    rlBindImageTexture(m_outImage.id, 0, m_outImage.format, false);
     rlBindShaderBuffer(m_sceneMaterialsBuffer, 1);
     rlBindShaderBuffer(m_sceneSpheresBuffer, 2);
     rlBindShaderBuffer(m_scenePlanesBuffer, 3);
@@ -154,7 +154,7 @@ template <class... Args> int Renderer::getUniformLoc(const char* fmt, Args... ar
 
 void Renderer::makeOutImage() {
     Image image = GenImageColor(m_imageSize.x, m_imageSize.y, BLUE);
-    ImageFormat(&image, RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32);
+    ImageFormat(&image, PIXELFORMAT_UNCOMPRESSED_R16G16B16A16);
     m_outImage = LoadTextureFromImage(image);
     UnloadImage(image);
 }

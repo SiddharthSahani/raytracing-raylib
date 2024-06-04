@@ -75,7 +75,7 @@ struct Config {
 
 // ----- UNIFORMS AND BUFFERS -----
 
-layout (rgba32f, binding = 0) uniform image2D outImage;
+layout (rgba16f, binding = 0) uniform image2D outImage;
 layout (std430, binding = 1) readonly buffer materialBlock {
     Material data[];
 } materials;

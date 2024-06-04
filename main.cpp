@@ -106,7 +106,7 @@ int main() {
 
     // SetTargetFPS(0);
     while (!WindowShouldClose()) {
-        if (IsKeyPressed(KEY_C)) {
+        if (IsKeyPressed(KEY_R)) {
             renderer.resetImage();
         }
 
