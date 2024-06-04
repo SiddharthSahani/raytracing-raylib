@@ -68,16 +68,15 @@ void Renderer::runComputeShader() {
         return;
     }
 
+    m_frameIndex++;
     static int uniLoc_frameIndex = getUniformLoc("frameIndex");
-    static int frameIndex = 0;
-    frameIndex++;
 
     const int groupX = m_imageSize.x / m_compileParams.workgroupSize;
     const int groupY = m_imageSize.y / m_compileParams.workgroupSize;
 
     rlEnableShader(m_computeShaderProgram);
 
-    rlSetUniform(uniLoc_frameIndex, &frameIndex, RL_SHADER_UNIFORM_INT, 1);
+    rlSetUniform(uniLoc_frameIndex, &m_frameIndex, RL_SHADER_UNIFORM_INT, 1);
     rlBindImageTexture(m_outImage.id, 0, RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32, false);
     rlBindShaderBuffer(m_sceneMaterialsBuffer, 1);
     rlBindShaderBuffer(m_sceneSpheresBuffer, 2);
@@ -85,6 +84,14 @@ void Renderer::runComputeShader() {
     rlBindShaderBuffer(m_sceneTrianglesBuffer, 4);
 
     rlComputeShaderDispatch(groupX, groupY, 1);
+}
+
+
+void Renderer::resetImage() {
+    static Image img = GenImageColor(m_imageSize.x, m_imageSize.y, BLANK);
+    ImageFormat(&img, m_outImage.format);
+    UpdateTexture(m_outImage, img.data);
+    m_frameIndex = 0;
 }
 
 

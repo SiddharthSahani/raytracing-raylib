@@ -106,6 +106,10 @@ int main() {
 
     // SetTargetFPS(0);
     while (!WindowShouldClose()) {
+        if (IsKeyPressed(KEY_C)) {
+            renderer.resetImage();
+        }
+
         renderer.runComputeShader();
         renderer.draw();
     }

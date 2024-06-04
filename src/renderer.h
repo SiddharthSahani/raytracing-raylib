@@ -29,6 +29,7 @@ public:
     void draw() const;
     void compileComputeShader(CompileShaderParams params);
     void runComputeShader();
+    void resetImage();
 
     bool canRender() const;
     unsigned getComputeShaderId() const { return m_computeShaderProgram; }
@@ -54,6 +55,7 @@ private:
     bool m_hasScene = false;
     bool m_hasConfig = false;
 
+    int m_frameIndex = 0;
     unsigned m_computeShaderProgram = 0;
     CompileShaderParams m_compileParams;
 
