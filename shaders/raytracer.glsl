@@ -8,9 +8,9 @@ layout (local_size_x = WG_SIZE, local_size_y = WG_SIZE, local_size_z = 1) in;
 // ----- STRUCT DEFINITIONS -----
 
 struct Camera {
+    mat4 invViewMat;
+    mat4 invProjMat;
     vec3 position;
-    vec3 direction;
-    float fov;
 };
 
 
@@ -244,14 +244,14 @@ bool hit(Triangle triangle, Ray ray, out HitRecord record) {
 
 Ray genRay() {
     vec2 imgSize = imageSize(outImage);
-    vec2 coefficients = (gl_GlobalInvocationID.xy * 2.0 - imgSize) / imgSize.x * camera.fov;
+    vec2 coord = vec2(gl_GlobalInvocationID.x, imgSize.y - gl_GlobalInvocationID.y);
+    coord = coord / imgSize * 2.0 - 1.0;
 
-    vec3 upDirection = vec3(0.0, 1.0, 0.0);
-    vec3 rightDirection = cross(camera.direction, upDirection);
+    vec4 target = camera.invProjMat * vec4(coord, 1.0, 1.0);
 
     Ray ray;
     ray.origin = camera.position;
-    ray.direction = camera.direction + coefficients.x * rightDirection - coefficients.y * upDirection;
+    ray.direction = (camera.invViewMat * vec4(normalize(target.xyz / target.w), 0.0)).xyz;
     return ray;
 }
 

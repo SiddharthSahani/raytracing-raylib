@@ -92,13 +92,14 @@ int main() {
 
     renderer.compileComputeShader(params);
 
-    SceneCamera camera(
-        {
-            .position = {0, 0, 6},
-            .direction = {0, 0, -1},
-            .fov = 60 * DEG2RAD,
-        },
-        SceneCameraParams{});
+    Vector3 camPosition = {0, 0, 6};
+    Vector3 camDirection = {0, 0, -1};
+    float camFov = 60.0;
+    SceneCameraParams camParams = {
+        .speed = 10.0,
+    };
+
+    SceneCamera camera(camPosition, camDirection, camFov, {imageWidth, imageHeight}, camParams);
 
     renderer.setCurrentCamera(camera.get());
 

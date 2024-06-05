@@ -9,8 +9,8 @@ namespace rt {
 
 struct Camera {
     Vector3 position;
-    Vector3 direction;
-    float fov;
+    Matrix invViewMat;
+    Matrix invProjMat;
 };
 
 
