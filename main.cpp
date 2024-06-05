@@ -1,4 +1,5 @@
 
+#include "src/camera.h"
 #include "src/renderer.h"
 
 
@@ -91,11 +92,16 @@ int main() {
 
     renderer.compileComputeShader(params);
 
-    renderer.setCurrentCamera({
-        .position = {0, 0, 6},
-        .direction = {0, 0, -1},
-        .fov = 60 * DEG2RAD,
-    });
+    SceneCamera camera(
+        {
+            .position = {0, 0, 6},
+            .direction = {0, 0, -1},
+            .fov = 60 * DEG2RAD,
+        },
+        SceneCameraParams{});
+
+    renderer.setCurrentCamera(camera.get());
+
     renderer.setCurrentConfig({
         .bounceLimit = 5,
         .numSamples = 16,
@@ -106,8 +112,9 @@ int main() {
 
     // SetTargetFPS(0);
     while (!WindowShouldClose()) {
-        if (IsKeyPressed(KEY_R)) {
+        if (camera.update(GetFrameTime())) {
             renderer.resetImage();
+            renderer.setCurrentCamera(camera.get());
         }
 
         renderer.runComputeShader();
