@@ -176,7 +176,7 @@ bool hit(Plane plane, Ray ray, out HitRecord record) {
     vec3 planeNormal = cross(plane.uDirection, plane.vDirection);
 
     float denom = dot(planeNormal, ray.direction);
-    if (denom > 0.00001) {
+    if (abs(denom) < 0.00001) {
         return false;
     }
 
@@ -193,6 +193,7 @@ bool hit(Plane plane, Ray ray, out HitRecord record) {
             // uv = (vec2(u, v) + vec2(plane.uSize, plane.vSize)) / (2 * vec2(plane.uSize, plane.vSize));
             record.worldPosition = p;
             record.worldNormal = planeNormal;
+            record.worldNormal *= dot(record.worldNormal, ray.direction) < 0.0 ? 1 : -1;
             record.hitDistance = t;
             record.materialIndex = plane.materialIndex;
             return true;
@@ -231,6 +232,7 @@ bool hit(Triangle triangle, Ray ray, out HitRecord record) {
         record.worldPosition = ray.origin + ray.direction * t;
         record.hitDistance = t;
         record.worldNormal = normalize(cross(v0v1, v0v2));
+        record.worldNormal *= dot(record.worldNormal, ray.direction) < 0.0 ? 1 : -1;
         record.materialIndex = triangle.materialIndex;
         return true;
     }
