@@ -48,6 +48,7 @@ struct Triangle {
 struct Material {
     vec3 albedo;
     float roughness;
+    float emissionPower;
 };
 
 
@@ -289,13 +290,14 @@ vec3 perPixel(inout uint rngState) {
             break;
         }
 
+        light += materials.data[record.materialIndex].albedo * materials.data[record.materialIndex].emissionPower * contribution;
         contribution *= materials.data[record.materialIndex].albedo;
 
         vec3 diffuseDir = normalize(record.worldNormal + randomDirection(rngState));
         vec3 specularDir = reflect(ray.direction, record.worldNormal);
 
         ray.origin = record.worldPosition + record.worldNormal * 0.001;
-        ray.direction = normalize(mix(specularDir, diffuseDir, materials.data[record.materialIndex].roughness));
+        ray.direction = normalize(mix(diffuseDir, specularDir, materials.data[record.materialIndex].roughness));
     }
 
     return light;
