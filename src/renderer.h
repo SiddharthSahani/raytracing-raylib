@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "src/structs/camera.h"
+#include "src/camera.h"
 #include "src/structs/config.h"
 #include "src/structs/scene.h"
 
@@ -26,22 +26,23 @@ class Renderer {
 public:
     Renderer(Vector2 windowSize, Vector2 imageSize);
     ~Renderer();
-    void draw() const;
+    void render(const SceneCamera& camera, const rt::Scene& scene, const rt::Config& config,
+                bool forceCameraUpdate = false, bool raytrace = true);
     void compileComputeShader(CompileShaderParams params);
-    void runComputeShader();
     void resetImage();
 
     bool canRender() const;
     unsigned getComputeShaderId() const { return m_computeShaderProgram; }
 
-    void setCurrentCamera(const rt::Camera& camera);
-    void setCurrentScene(const rt::Scene& scene);
-    void setCurrentConfig(const rt::Config& config);
 
 private:
     template <class... Args> int getUniformLoc(const char* fmt, Args... args) const;
+    void runComputeShader();
     void makeOutImage();
     void makeBufferObjects();
+    void updateCurrentCamera();
+    void updateCurrentScene();
+    void updateCurrentConfig();
     void setScene_spheres(const rt::Scene& scene);
     void setScene_planes(const rt::Scene& scene);
     void setScene_triangles(const rt::Scene& scene);
@@ -51,9 +52,9 @@ private:
     Vector2 m_imageSize;
     Texture m_outImage;
 
-    bool m_hasCamera = false;
-    bool m_hasScene = false;
-    bool m_hasConfig = false;
+    const SceneCamera* m_camera = nullptr;
+    const rt::Scene* m_scene = nullptr;
+    const rt::Config* m_config = nullptr;
 
     int m_frameIndex = 0;
     unsigned m_computeShaderProgram = 0;

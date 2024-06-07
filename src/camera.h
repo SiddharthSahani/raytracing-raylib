@@ -14,12 +14,16 @@ struct SceneCameraParams {
 class SceneCamera {
 
 public:
-    SceneCamera(Vector3 position, Vector3 direction, float fov, Vector2 imgSize, SceneCameraParams params);
+    SceneCamera(Vector3 position, Vector3 direction, float fov, Vector2 imgSize,
+                SceneCameraParams params);
     bool update(float dt);
     const rt::Camera& get() const { return m_camera; }
 
 private:
     Vector3 m_direction;
+    float m_fov;
     rt::Camera m_camera;
     SceneCameraParams m_params;
+
+    friend class Renderer;
 };

@@ -19,11 +19,75 @@ Renderer::~Renderer() {
 }
 
 
-void Renderer::draw() const {
-    BeginDrawing();
+void Renderer::render(const SceneCamera& camera, const rt::Scene& scene, const rt::Config& config,
+                      bool forceCameraUpdate, bool raytrace) {
 
-    DrawTexturePro(m_outImage, {0, 0, m_imageSize.x, m_imageSize.y},
-                   {0, 0, m_windowSize.x, m_windowSize.y}, {0, 0}, 0, WHITE);
+    BeginDrawing();
+    ClearBackground(scene.backgroundColor);
+
+    if (raytrace) {
+        if (forceCameraUpdate || m_camera != &camera) {
+            m_camera = &camera;
+            updateCurrentCamera();
+        }
+        if (m_scene != &scene) {
+            m_scene = &scene;
+            updateCurrentScene();
+        }
+        if (m_config != &config) {
+            m_config = &config;
+            updateCurrentConfig();
+        }
+
+        runComputeShader();
+
+        DrawTexturePro(m_outImage, {0, 0, m_imageSize.x, m_imageSize.y},
+                       {0, 0, m_windowSize.x, m_windowSize.y}, {0, 0}, 0, WHITE);
+    } else {
+
+        Camera3D rlCamera{
+            .position = camera.m_camera.position,
+            .target = Vector3Add(camera.m_camera.position, camera.m_direction),
+            .up = {0, 1, 0},
+            .fovy = camera.m_fov,
+            .projection = CAMERA_PERSPECTIVE,
+        };
+
+        BeginMode3D(rlCamera);
+
+        for (const rt::Sphere& sph : scene.spheres) {
+            Color col = ColorFromNormalized({
+                scene.materials[sph.materialIndex].albedo.x,
+                scene.materials[sph.materialIndex].albedo.y,
+                scene.materials[sph.materialIndex].albedo.z,
+                1.0,
+            });
+            DrawSphere(sph.position, sph.radius, col);
+        }
+
+        for (const rt::Triangle& tri : scene.triangles) {
+            Color col = ColorFromNormalized({
+                scene.materials[tri.materialIndex].albedo.x,
+                scene.materials[tri.materialIndex].albedo.y,
+                scene.materials[tri.materialIndex].albedo.z,
+                1.0,
+            });
+            DrawTriangle3D(tri.v0, tri.v1, tri.v2, col);
+            DrawTriangle3D(tri.v0, tri.v2, tri.v1, col);
+        }
+
+        // DOESNT SUPPORT PLANES yet
+        // for (const rt::Plane& pl : scene.planes) {
+        //     Color col = ColorFromNormalized({
+        //         scene.materials[pl.materialIndex].albedo.x,
+        //         scene.materials[pl.materialIndex].albedo.y,
+        //         scene.materials[pl.materialIndex].albedo.z,
+        //         1.0,
+        //     });
+        // }
+
+        EndMode3D();
+    }
 
     DrawFPS(10, 10);
     DrawText(TextFormat("Frame Time: %.5f", GetFrameTime()), 10, 30, 20, DARKBLUE);
@@ -63,6 +127,74 @@ void Renderer::compileComputeShader(CompileShaderParams _params) {
 }
 
 
+void Renderer::resetImage() {
+    static Image img = GenImageColor(m_imageSize.x, m_imageSize.y, BLANK);
+    ImageFormat(&img, m_outImage.format);
+    UpdateTexture(m_outImage, img.data);
+    m_frameIndex = 0;
+}
+
+
+bool Renderer::canRender() const {
+    return m_computeShaderProgram && m_camera && m_scene && m_config;
+}
+
+
+void Renderer::updateCurrentCamera() {
+    const rt::Camera& camera = m_camera->get();
+
+    rlEnableShader(m_computeShaderProgram);
+
+    const int uniLoc_invViewMat = getUniformLoc("camera.invViewMat");
+    const int uniLoc_invProjMat = getUniformLoc("camera.invProjMat");
+    const int uniLoc_position = getUniformLoc("camera.position");
+
+    rlSetUniformMatrix(uniLoc_invViewMat, camera.invViewMat);
+    rlSetUniformMatrix(uniLoc_invProjMat, camera.invProjMat);
+    rlSetUniform(uniLoc_position, &camera.position, RL_SHADER_UNIFORM_VEC3, 1);
+}
+
+
+void Renderer::updateCurrentScene() {
+    const rt::Scene& scene = *m_scene;
+
+    rlEnableShader(m_computeShaderProgram);
+
+    const int materialBufferSize = sizeof(rt::Material) * scene.materials.size();
+    rlUpdateShaderBuffer(m_sceneMaterialsBuffer, scene.materials.data(), materialBufferSize, 0);
+
+    setScene_spheres(scene);
+    setScene_planes(scene);
+    setScene_triangles(scene);
+
+    const int uniLoc_backgroundColor = getUniformLoc("sceneInfo.backgroundColor");
+    const int uniLoc_numSpheres = getUniformLoc("sceneInfo.numSpheres");
+    const int uniLoc_numPlanes = getUniformLoc("sceneInfo.numPlanes");
+
+    const Vector4 backgroundColorVec = ColorNormalize(scene.backgroundColor);
+    rlSetUniform(uniLoc_backgroundColor, &backgroundColorVec, RL_SHADER_UNIFORM_VEC3, 1);
+}
+
+
+void Renderer::updateCurrentConfig() {
+    const rt::Config& config = *m_config;
+
+    rlEnableShader(m_computeShaderProgram);
+
+    const int uniLoc_bounceLimit = getUniformLoc("config.bounceLimit");
+    const int uniLoc_numSamples = getUniformLoc("config.numSamples");
+
+    rlSetUniform(uniLoc_bounceLimit, &config.bounceLimit, RL_SHADER_UNIFORM_FLOAT, 1);
+    rlSetUniform(uniLoc_numSamples, &config.numSamples, RL_SHADER_UNIFORM_FLOAT, 1);
+}
+
+
+template <class... Args> int Renderer::getUniformLoc(const char* fmt, Args... args) const {
+    const char* uniformName = TextFormat(fmt, args...);
+    return rlGetLocationUniform(m_computeShaderProgram, uniformName);
+}
+
+
 void Renderer::runComputeShader() {
     if (!canRender()) {
         return;
@@ -84,71 +216,6 @@ void Renderer::runComputeShader() {
     rlBindShaderBuffer(m_sceneTrianglesBuffer, 4);
 
     rlComputeShaderDispatch(groupX, groupY, 1);
-}
-
-
-void Renderer::resetImage() {
-    static Image img = GenImageColor(m_imageSize.x, m_imageSize.y, BLANK);
-    ImageFormat(&img, m_outImage.format);
-    UpdateTexture(m_outImage, img.data);
-    m_frameIndex = 0;
-}
-
-
-bool Renderer::canRender() const {
-    return m_computeShaderProgram && m_hasCamera && m_hasScene && m_hasConfig;
-}
-
-
-void Renderer::setCurrentCamera(const rt::Camera& camera) {
-    rlEnableShader(m_computeShaderProgram);
-    m_hasCamera = true;
-
-    const int uniLoc_invViewMat = getUniformLoc("camera.invViewMat");
-    const int uniLoc_invProjMat = getUniformLoc("camera.invProjMat");
-    const int uniLoc_position = getUniformLoc("camera.position");
-
-    rlSetUniformMatrix(uniLoc_invViewMat, camera.invViewMat);
-    rlSetUniformMatrix(uniLoc_invProjMat, camera.invProjMat);
-    rlSetUniform(uniLoc_position, &camera.position, RL_SHADER_UNIFORM_VEC3, 1);
-}
-
-
-void Renderer::setCurrentScene(const rt::Scene& scene) {
-    rlEnableShader(m_computeShaderProgram);
-    m_hasScene = true;
-
-    const int materialBufferSize = sizeof(rt::Material) * scene.materials.size();
-    rlUpdateShaderBuffer(m_sceneMaterialsBuffer, scene.materials.data(), materialBufferSize, 0);
-
-    setScene_spheres(scene);
-    setScene_planes(scene);
-    setScene_triangles(scene);
-
-    const int uniLoc_backgroundColor = getUniformLoc("sceneInfo.backgroundColor");
-    const int uniLoc_numSpheres = getUniformLoc("sceneInfo.numSpheres");
-    const int uniLoc_numPlanes = getUniformLoc("sceneInfo.numPlanes");
-
-    const Vector4 backgroundColorVec = ColorNormalize(scene.backgroundColor);
-    rlSetUniform(uniLoc_backgroundColor, &backgroundColorVec, RL_SHADER_UNIFORM_VEC3, 1);
-}
-
-
-void Renderer::setCurrentConfig(const rt::Config& config) {
-    rlEnableShader(m_computeShaderProgram);
-    m_hasConfig = true;
-
-    const int uniLoc_bounceLimit = getUniformLoc("config.bounceLimit");
-    const int uniLoc_numSamples = getUniformLoc("config.numSamples");
-
-    rlSetUniform(uniLoc_bounceLimit, &config.bounceLimit, RL_SHADER_UNIFORM_FLOAT, 1);
-    rlSetUniform(uniLoc_numSamples, &config.numSamples, RL_SHADER_UNIFORM_FLOAT, 1);
-}
-
-
-template <class... Args> int Renderer::getUniformLoc(const char* fmt, Args... args) const {
-    const char* uniformName = TextFormat(fmt, args...);
-    return rlGetLocationUniform(m_computeShaderProgram, uniformName);
 }
 
 

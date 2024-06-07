@@ -92,7 +92,7 @@ int main() {
         .storageType = SceneStorageType::Uniforms,
         // .storageType = SceneStorageType::Buffers,
 
-        .maxSphereCount = 32,
+        .maxSphereCount = 16,
         .maxPlaneCount = 5,
         .maxTriangleCount = 5,
     };
@@ -107,25 +107,27 @@ int main() {
     };
 
     SceneCamera camera(camPosition, camDirection, camFov, {imageWidth, imageHeight}, camParams);
-
-    renderer.setCurrentCamera(camera.get());
-
-    renderer.setCurrentConfig({
+    rt::Scene scene = createScene_1();
+    // rt::Scene scene = createRandomScene(16);
+    rt::Config config = {
         .bounceLimit = 5,
         .numSamples = 16,
-    });
+    };
 
-    // renderer.setCurrentScene(createRandomScene(16));
-    renderer.setCurrentScene(createScene_1());
+    bool raytrace = true;
 
     // SetTargetFPS(0);
     while (!WindowShouldClose()) {
+        bool forceCameraUpdate = false;
         if (camera.update(GetFrameTime())) {
             renderer.resetImage();
-            renderer.setCurrentCamera(camera.get());
+            forceCameraUpdate = true;
         }
 
-        renderer.runComputeShader();
-        renderer.draw();
+        if (IsKeyPressed(KEY_SPACE)) {
+            raytrace = !raytrace;
+        }
+
+        renderer.render(camera, scene, config, forceCameraUpdate, raytrace);
     }
 }
