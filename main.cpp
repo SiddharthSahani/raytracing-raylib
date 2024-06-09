@@ -126,6 +126,7 @@ int main() {
 
         if (IsKeyPressed(KEY_SPACE)) {
             raytrace = !raytrace;
+            forceCameraUpdate = true;
         }
 
         renderer.render(camera, scene, config, forceCameraUpdate, raytrace);
