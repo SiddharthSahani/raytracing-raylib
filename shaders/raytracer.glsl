@@ -123,7 +123,7 @@ uniform int frameIndex;
 
 // ----- RNG FUNCTIONS -----
 
-// PCG www.shadertoy.com/view/XlGcRh
+// PCG https://www.shadertoy.com/view/XlGcRh
 uint nextRandom(inout uint state) {
     state = state * 747796405u + 2891336453u;
     uint result = ((state >> ((state >> 28) + 4u)) ^ state) * 277803737u;
@@ -137,11 +137,21 @@ float randomValue(inout uint state) {
 }
 
 
+float randomNormalFloat(inout uint seed) {
+    float theta = 2.0f * 3.1415926 * randomValue(seed);
+    float rho = sqrt(-2.0f * log(randomValue(seed)));
+    return rho * cos(theta);
+}
+
+
 vec3 randomDirection(inout uint state) {
     return normalize(vec3(
-        randomValue(state),
-        randomValue(state),
-        randomValue(state)
+        // randomValue(state),
+        // randomValue(state),
+        // randomValue(state)
+        randomNormalFloat(state),
+        randomNormalFloat(state),
+        randomNormalFloat(state)
     ) * 2 - 1);
 }
 

@@ -67,7 +67,7 @@ rt::Scene createScene_1() {
     }
 
     {
-        rt::Material mat = rt::Material({210, 75, 70, 255}, 1.0, 5.0);
+        rt::Material mat = rt::Material({210, 75, 70, 255}, 1.0, 50.0);
         scene.materials.push_back(mat);
         rt::Sphere glowingSphere = rt::Sphere({-1.3, 0, -1.2}, 0.1, 3);
         scene.spheres.push_back(glowingSphere);

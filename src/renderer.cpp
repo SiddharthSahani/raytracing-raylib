@@ -91,6 +91,7 @@ void Renderer::render(const SceneCamera& camera, const rt::Scene& scene, const r
 
     DrawFPS(10, 10);
     DrawText(TextFormat("Frame Time: %.5f", GetFrameTime()), 10, 30, 20, DARKBLUE);
+    DrawText(TextFormat("Frame Index: %d", m_frameIndex), 10,50, 20, DARKBLUE);
     EndDrawing();
 }
 
