@@ -107,18 +107,24 @@ int main() {
     };
 
     SceneCamera camera(camPosition, camDirection, camFov, {imageWidth, imageHeight}, camParams);
-    rt::Scene scene = createScene_1();
-    // rt::Scene scene = createRandomScene(16);
-    rt::Config config = {
-        .bounceLimit = 5,
-        .numSamples = 16,
-    };
+    const rt::Scene scene = createScene_1();
+    // const rt::Scene scene = createRandomScene(16);
 
+    const rt::Config configs[] = {
+        {.bounceLimit = 5, .numSamples = 1},
+        {.bounceLimit = 5, .numSamples = 4},
+        {.bounceLimit = 5, .numSamples = 16},
+        {.bounceLimit = 5, .numSamples = 32},
+    };
+    const int numConfigs = sizeof(configs) / sizeof(rt::Config);
+
+    unsigned configIdx = 2;
     bool raytrace = true;
 
     // SetTargetFPS(0);
     while (!WindowShouldClose()) {
         bool forceCameraUpdate = false;
+
         if (camera.update(GetFrameTime())) {
             renderer.resetImage();
             forceCameraUpdate = true;
@@ -129,6 +135,16 @@ int main() {
             forceCameraUpdate = true;
         }
 
-        renderer.render(camera, scene, config, forceCameraUpdate, raytrace);
+        if (IsKeyDown(KEY_C)) {
+            if (IsKeyPressed(KEY_LEFT)) {
+                configIdx -= 1;
+            }
+            if (IsKeyPressed(KEY_RIGHT)) {
+                configIdx += 1;
+            }
+        }
+
+        renderer.render(camera, scene, configs[configIdx % numConfigs], forceCameraUpdate,
+                        raytrace);
     }
 }
