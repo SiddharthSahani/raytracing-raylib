@@ -35,7 +35,7 @@ bool SceneCamera::update(float timestep) {
 
     const Vector3 upDirection = {0, 1, 0};
     const Vector3 rightDirection = Vector3CrossProduct(m_direction, upDirection);
-    const float camSpeed = m_params.speed * timestep;
+    const float camSpeed = m_params.speed * timestep * (IsKeyDown(KEY_LEFT_SHIFT) ? 5 : 1);
 
     if (IsKeyDown(KEY_W)) {
         m_camera.position = Vector3Add(m_camera.position, Vector3Scale(m_direction, camSpeed));
