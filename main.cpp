@@ -78,6 +78,48 @@ rt::Scene createScene_1() {
 }
 
 
+rt::Scene createScene_2() {
+    rt::Scene scene;
+
+    {
+        rt::Material mat = rt::Material({255, 0, 255, 255}, 0.0, 0.0);
+        scene.materials.push_back(mat);
+        rt::Sphere sphere = rt::Sphere({0.5, 0.0, 0.0}, 1.0, 0);
+        scene.spheres.push_back(sphere);
+    }
+
+    {
+        rt::Material mat = rt::Material({50, 75, 255, 255}, 0.0, 0.0);
+        scene.materials.push_back(mat);
+        rt::Sphere sphere = rt::Sphere({0.0, -101.0, 0.0}, 100.0, 1);
+        scene.spheres.push_back(sphere);
+    }
+
+    {
+        rt::Material mat = rt::Material({205, 128, 50, 255}, 0.0, 100.0);
+        scene.materials.push_back(mat);
+        rt::Sphere sphere = rt::Sphere({32.0, 4.0, -32.0}, 20.0, 2);
+        scene.spheres.push_back(sphere);
+    }
+
+    {
+        rt::Material mat = rt::Material({205, 205, 205, 255}, 1.0, 0.0);
+        scene.materials.push_back(mat);
+        rt::Triangle tri = rt::Triangle({0.0, 2.0, -3.0}, {-2.0, 2.0, -2.0}, {0.0, -1.0, -3.0}, 3);
+        scene.triangles.push_back(tri);
+    }
+
+    {
+        rt::Triangle tri =
+            rt::Triangle({-2.0f, 2.0f, -2.0f}, {0.0f, -1.0f, -3.0f}, {-2.0f, -1.0f, -2.0f}, 3);
+        scene.triangles.push_back(tri);
+    }
+
+    scene.backgroundColor = {70, 70, 70, 255};
+    return scene;
+}
+
+
 int main() {
     const int windowWidth = 1280;
     const int windowHeight = 720;
@@ -107,7 +149,7 @@ int main() {
     };
 
     SceneCamera camera(camPosition, camDirection, camFov, {imageWidth, imageHeight}, camParams);
-    const rt::Scene scene = createScene_1();
+    const rt::Scene scene = createScene_2();
     // const rt::Scene scene = createRandomScene(16);
 
     const rt::Config configs[] = {
