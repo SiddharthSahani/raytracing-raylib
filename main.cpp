@@ -18,7 +18,7 @@ rt::Scene createRandomScene(int numSpheres) {
         float roughness = i / 4.0;
 
         rt::Material material = rt::Material(col, roughness, 0.0);
-        scene.materials.push_back(material);
+        scene.addMaterial(material);
     }
 
     for (int i = 0; i < numSpheres; i++) {
@@ -29,7 +29,8 @@ rt::Scene createRandomScene(int numSpheres) {
         };
         float rad = GetRandomValue(3000, 8000) / 10000.0f;
 
-        scene.spheres.push_back(rt::Sphere{pos, rad, GetRandomValue(0, 4)});
+        rt::Sphere sph = rt::Sphere{pos, rad, GetRandomValue(0, 4)};
+        scene.addObject(sph);
     }
 
     scene.backgroundColor = {210, 210, 240, 255};
@@ -42,35 +43,35 @@ rt::Scene createScene_1() {
 
     {
         rt::Material mat = rt::Material({50, 230, 200, 255}, 0.0, 0.0);
-        scene.materials.push_back(mat);
+        scene.addMaterial(mat);
         rt::Sphere centerSphere = rt::Sphere({0, 0, 0}, 1.0, 0);
-        scene.spheres.push_back(centerSphere);
+        scene.addObject(centerSphere);
     }
 
     {
         rt::Material mat = rt::Material({200, 180, 190, 255}, 0.8, 0.0);
-        scene.materials.push_back(mat);
+        scene.addMaterial(mat);
         rt::Sphere groundSphere = rt::Sphere({0, -6, 0}, 5.0, 1);
-        scene.spheres.push_back(groundSphere);
+        scene.addObject(groundSphere);
     }
 
     {
         rt::Material mat = rt::Material({220, 220, 220, 255}, 1.0, 0.0);
-        scene.materials.push_back(mat);
+        scene.addMaterial(mat);
         rt::Plane plane = rt::Plane({1.3, 0, -1}, {0.7, 0, 1}, {0, 1, 0}, {1.2, 1.2}, 2);
-        scene.planes.push_back(plane);
+        scene.addObject(plane);
     }
 
     {
         rt::Triangle triangle = rt::Triangle({-1.3, 0, -1.2}, {-2, 1.1, 1}, {-2, -1.1, 1}, 2);
-        scene.triangles.push_back(triangle);
+        scene.addObject(triangle);
     }
 
     {
         rt::Material mat = rt::Material({210, 75, 70, 255}, 1.0, 50.0);
-        scene.materials.push_back(mat);
+        scene.addMaterial(mat);
         rt::Sphere glowingSphere = rt::Sphere({-1.3, 0, -1.2}, 0.1, 3);
-        scene.spheres.push_back(glowingSphere);
+        scene.addObject(glowingSphere);
     }
 
     scene.backgroundColor = {200, 200, 200, 255};
@@ -83,39 +84,38 @@ rt::Scene createScene_2() {
 
     {
         rt::Material mat = rt::Material({255, 0, 255, 255}, 0.0, 0.0);
-        scene.materials.push_back(mat);
+        scene.addMaterial(mat);
         rt::Sphere sphere = rt::Sphere({0.5, 0.0, 0.0}, 1.0, 0);
-        scene.spheres.push_back(sphere);
+        scene.addObject(sphere);
     }
 
     {
         rt::Material mat = rt::Material({50, 75, 255, 255}, 0.0, 0.0);
-        scene.materials.push_back(mat);
+        scene.addMaterial(mat);
         rt::Sphere sphere = rt::Sphere({0.0, -101.0, 0.0}, 100.0, 1);
-        scene.spheres.push_back(sphere);
+        scene.addObject(sphere);
     }
 
     {
         rt::Material mat = rt::Material({205, 128, 50, 255}, 0.0, 100.0);
-        scene.materials.push_back(mat);
+        scene.addMaterial(mat);
         rt::Sphere sphere = rt::Sphere({32.0, 4.0, -32.0}, 20.0, 2);
-        scene.spheres.push_back(sphere);
+        scene.addObject(sphere);
     }
 
     {
         rt::Material mat = rt::Material({205, 205, 205, 255}, 1.0, 0.0);
-        scene.materials.push_back(mat);
+        scene.addMaterial(mat);
         rt::Triangle tri = rt::Triangle({0.0, 2.0, -3.0}, {-2.0, 2.0, -2.0}, {0.0, -1.0, -3.0}, 3);
-        scene.triangles.push_back(tri);
+        scene.addObject(tri);
     }
 
     {
-        rt::Triangle tri =
-            rt::Triangle({-2.0f, 2.0f, -2.0f}, {0.0f, -1.0f, -3.0f}, {-2.0f, -1.0f, -2.0f}, 3);
-        scene.triangles.push_back(tri);
+        rt::Triangle tr = rt::Triangle({-2.0, 2.0, -2.0}, {0.0, -1.0, -3.0}, {-2.0, -1.0, -2.0}, 3);
+        scene.addObject(tr);
     }
 
-    scene.backgroundColor = {70, 70, 70, 255};
+    scene.backgroundColor = {200, 200, 200, 255};
     return scene;
 }
 
