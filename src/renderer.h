@@ -16,7 +16,6 @@ struct CompileShaderParams {
     unsigned workgroupSize;
     SceneStorageType storageType;
     unsigned maxSphereCount;
-    unsigned maxPlaneCount;
     unsigned maxTriangleCount;
 };
 
@@ -44,7 +43,6 @@ private:
     void updateCurrentScene();
     void updateCurrentConfig();
     void setScene_spheres(const rt::Scene& scene);
-    void setScene_planes(const rt::Scene& scene);
     void setScene_triangles(const rt::Scene& scene);
 
 private:
@@ -62,6 +60,5 @@ private:
 
     unsigned m_sceneMaterialsBuffer = 0;
     unsigned m_sceneSpheresBuffer = 0;
-    unsigned m_scenePlanesBuffer = 0;
     unsigned m_sceneTrianglesBuffer = 0;
 };

@@ -25,29 +25,6 @@ struct Sphere {
 };
 
 
-struct Plane {
-
-    // 16 bytes
-    Vector3 center;
-    int materialIndex;
-    // 16 bytes
-    Vector3 uDirection;
-    float uSize;
-    // 16 bytes
-    Vector3 vDirection;
-    float vSize;
-
-    Plane(Vector3 _center, Vector3 _uDir, Vector3 _vDir, Vector2 _size, int _materialIndex) {
-        center = _center;
-        uDirection = Vector3Normalize(_uDir);
-        vDirection = Vector3Normalize(_vDir);
-        uSize = _size.x;
-        vSize = _size.y;
-        materialIndex = _materialIndex;
-    }
-};
-
-
 struct Triangle {
 
     // 16 bytes

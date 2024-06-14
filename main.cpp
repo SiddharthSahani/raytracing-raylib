@@ -58,11 +58,6 @@ rt::Scene createScene_1() {
     {
         rt::Material mat = rt::Material({220, 220, 220, 255}, 1.0, 0.0);
         scene.addMaterial(mat);
-        rt::Plane plane = rt::Plane({1.3, 0, -1}, {0.7, 0, 1}, {0, 1, 0}, {1.2, 1.2}, 2);
-        scene.addObject(plane);
-    }
-
-    {
         rt::Triangle triangle = rt::Triangle({-1.3, 0, -1.2}, {-2, 1.1, 1}, {-2, -1.1, 1}, 2);
         scene.addObject(triangle);
     }
@@ -135,7 +130,6 @@ int main() {
         // .storageType = SceneStorageType::Buffers,
 
         .maxSphereCount = 16,
-        .maxPlaneCount = 5,
         .maxTriangleCount = 5,
     };
 
@@ -149,7 +143,7 @@ int main() {
     };
 
     SceneCamera camera(camPosition, camDirection, camFov, {imageWidth, imageHeight}, camParams);
-    const rt::Scene scene = createScene_2();
+    const rt::Scene scene = createScene_1();
     // const rt::Scene scene = createRandomScene(16);
 
     const rt::Config configs[] = {

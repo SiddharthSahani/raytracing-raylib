@@ -27,16 +27,6 @@ struct Sphere {
 };
 
 
-struct Plane {
-    vec3 center;
-    int materialIndex;
-    vec3 uDirection;
-    float uSize;
-    vec3 vDirection;
-    float vSize;
-};
-
-
 struct Triangle {
     vec3 v0;
     vec3 v1;
@@ -63,7 +53,6 @@ struct HitRecord {
 struct SceneInfo {
     vec3 backgroundColor;
     int numSpheres;
-    int numPlanes;
     int numTriangles;
 };
 
@@ -93,16 +82,11 @@ uniform int frameIndex;
         Sphere data[MAX_SPHERE_COUNT];
     };
 
-    struct ScenePlanes {
-        Plane data[MAX_PLANE_COUNT];
-    };
-
     struct SceneTriangles {
         Triangle data[MAX_TRIANGLE_COUNT];
     };
 
     uniform SceneSpheres sceneSpheres;
-    uniform ScenePlanes scenePlanes;
     uniform SceneTriangles sceneTriangles;
 
 #else
@@ -111,11 +95,7 @@ uniform int frameIndex;
         Sphere data[];
     } sceneSpheres;
 
-    layout (std430, binding = 3) readonly buffer scenePlanesBlock {
-        Plane data[];
-    } scenePlanes;
-
-    layout (std430, binding = 4) readonly buffer sceneTrianglesBlock {
+    layout (std430, binding = 3) readonly buffer sceneTrianglesBlock {
         Triangle data[];
     } sceneTriangles;
 
@@ -183,38 +163,6 @@ bool hit(Sphere sphere, Ray ray, out HitRecord record) {
 }
 
 
-bool hit(Plane plane, Ray ray, out HitRecord record) {
-    vec3 planeNormal = cross(plane.uDirection, plane.vDirection);
-
-    float denom = dot(planeNormal, ray.direction);
-    if (abs(denom) < 0.00001) {
-        return false;
-    }
-
-    float t = dot(plane.center - ray.origin, planeNormal) / denom;
-
-    if (t > 0.0 && t < record.hitDistance) {
-        vec3 p = ray.origin + t * ray.direction;
-        vec3 dir = p - plane.center;
-
-        float u = dot(dir, plane.uDirection);
-        float v = dot(dir, plane.vDirection);
-
-        if (u > -plane.uSize && u < plane.uSize && v > -plane.vSize && v < plane.vSize) {
-            // uv = (vec2(u, v) + vec2(plane.uSize, plane.vSize)) / (2 * vec2(plane.uSize, plane.vSize));
-            record.worldPosition = p;
-            record.worldNormal = planeNormal;
-            record.worldNormal *= dot(record.worldNormal, ray.direction) < 0.0 ? 1 : -1;
-            record.hitDistance = t;
-            record.materialIndex = plane.materialIndex;
-            return true;
-        }
-    }
-
-    return false;
-}
-
-
 bool hit(Triangle triangle, Ray ray, out HitRecord record) {
     vec3 v0v1 = triangle.v1 - triangle.v0;
     vec3 v0v2 = triangle.v2 - triangle.v0;
@@ -273,10 +221,6 @@ HitRecord traceRay(Ray ray) {
 
     for (int i = 0; i < sceneInfo.numSpheres; i++) {
         hit(sceneSpheres.data[i], ray, record);
-    }
-
-    for (int i = 0; i < sceneInfo.numPlanes; i++) {
-        hit(scenePlanes.data[i], ray, record);
     }
 
     for (int i = 0; i < sceneInfo.numTriangles; i++) {
