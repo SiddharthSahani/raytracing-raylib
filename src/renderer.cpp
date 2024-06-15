@@ -280,14 +280,22 @@ void Renderer::setScene_triangles(const rt::Scene& scene) {
             const int uniLoc_v0 = getUniformLoc("%s.v0", copy);
             const int uniLoc_v1 = getUniformLoc("%s.v1", copy);
             const int uniLoc_v2 = getUniformLoc("%s.v2", copy);
+            const int uniLoc_uv0 = getUniformLoc("%s.uv0", copy);
+            const int uniLoc_uv1 = getUniformLoc("%s.uv1", copy);
+            const int uniLoc_uv2 = getUniformLoc("%s.uv2", copy);
             const int uniLoc_materialIndex = getUniformLoc("%s.materialIndex", copy);
 
             // 12 -> 16 bytes
             rlSetUniform(uniLoc_v0, &obj.v0, RL_SHADER_UNIFORM_VEC3, 1);
-            // 12 ->16 bytes
+            // 12 -> 16 bytes
             rlSetUniform(uniLoc_v1, &obj.v1, RL_SHADER_UNIFORM_VEC3, 1);
-            // 16 bytes
+            // 12 -> 16 bytes
             rlSetUniform(uniLoc_v2, &obj.v2, RL_SHADER_UNIFORM_VEC3, 1);
+            // 16 bytes
+            rlSetUniform(uniLoc_uv0, &obj.uv0, RL_SHADER_UNIFORM_VEC2, 1);
+            rlSetUniform(uniLoc_uv1, &obj.uv1, RL_SHADER_UNIFORM_VEC2, 1);
+            // 16 bytes
+            rlSetUniform(uniLoc_uv2, &obj.uv2, RL_SHADER_UNIFORM_VEC2, 1);
             rlSetUniform(uniLoc_materialIndex, &obj.materialIndex, RL_SHADER_UNIFORM_INT, 1);
         }
 

@@ -31,6 +31,9 @@ struct Triangle {
     vec3 v0;
     vec3 v1;
     vec3 v2;
+    vec2 uv0;
+    vec2 uv1;
+    vec2 uv2;
     int materialIndex;
 };
 
@@ -47,6 +50,7 @@ struct HitRecord {
     float hitDistance;
     vec3 worldNormal;
     int materialIndex;
+    vec2 uv;
 };
 
 
@@ -156,6 +160,11 @@ bool hit(Sphere sphere, Ray ray, out HitRecord record) {
         record.worldNormal = normalize(record.worldPosition - sphere.position);
         record.hitDistance = t;
         record.materialIndex = sphere.materialIndex;
+
+        float u = 0.5 + atan(record.worldNormal.z, record.worldNormal.x) / (2*3.14);
+        float v = 0.5 - asin(record.worldNormal.y) / 3.14;
+        record.uv = vec2(u, v);
+
         return true;
     }
 
@@ -193,6 +202,7 @@ bool hit(Triangle triangle, Ray ray, out HitRecord record) {
         record.worldNormal = normalize(cross(v0v1, v0v2));
         record.worldNormal *= dot(record.worldNormal, ray.direction) < 0.0 ? 1 : -1;
         record.materialIndex = triangle.materialIndex;
+        record.uv = u * triangle.uv1 + v * triangle.uv2 + (1-u-v) * triangle.uv0;
         return true;
     }
 
@@ -235,9 +245,13 @@ vec3 perPixel(inout uint rngState) {
     Ray ray = genRay();
     vec3 light = vec3(0.0, 0.0, 0.0);
     vec3 contribution = vec3(1.0, 1.0, 1.0);
+    vec2 uv;
 
     for (float i = 0; i < config.bounceLimit; i++) {
         HitRecord record = traceRay(ray);
+        if (i == 0) {
+            uv = record.uv;
+        }
 
         if (record.hitDistance == FLT_MAX) {
             light += sceneInfo.backgroundColor * contribution;
@@ -254,7 +268,7 @@ vec3 perPixel(inout uint rngState) {
         ray.direction = normalize(mix(diffuseDir, specularDir, materials.data[record.materialIndex].roughness));
     }
 
-    return light;
+    return vec3(uv, 0);
 }
 
 
