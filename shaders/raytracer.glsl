@@ -245,13 +245,9 @@ vec3 perPixel(inout uint rngState) {
     Ray ray = genRay();
     vec3 light = vec3(0.0, 0.0, 0.0);
     vec3 contribution = vec3(1.0, 1.0, 1.0);
-    vec2 uv;
 
     for (float i = 0; i < config.bounceLimit; i++) {
         HitRecord record = traceRay(ray);
-        if (i == 0) {
-            uv = record.uv;
-        }
 
         if (record.hitDistance == FLT_MAX) {
             light += sceneInfo.backgroundColor * contribution;
@@ -268,7 +264,7 @@ vec3 perPixel(inout uint rngState) {
         ray.direction = normalize(mix(diffuseDir, specularDir, materials.data[record.materialIndex].roughness));
     }
 
-    return vec3(uv, 0);
+    return light;
 }
 
 

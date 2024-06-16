@@ -23,11 +23,11 @@ rt::Scene createRandomScene(int numSpheres) {
 
     for (int i = 0; i < numSpheres; i++) {
         Vector3 pos = {
-            GetRandomValue(-22000, 22000) / 10000.0f,
-            GetRandomValue(-22000, 22000) / 10000.0f,
-            GetRandomValue(-22000, 22000) / 10000.0f,
+            GetRandomValue(-40000, 40000) / 10000.0f,
+            GetRandomValue(-40000, 40000) / 10000.0f,
+            GetRandomValue(-40000, 40000) / 10000.0f,
         };
-        float rad = GetRandomValue(3000, 8000) / 10000.0f;
+        float rad = GetRandomValue(5000, 10000) / 10000.0f;
 
         rt::Sphere sph = rt::Sphere{pos, rad, GetRandomValue(0, 4)};
         scene.addObject(sph);
@@ -143,8 +143,14 @@ int main() {
     };
 
     SceneCamera camera(camPosition, camDirection, camFov, {imageWidth, imageHeight}, camParams);
-    const rt::Scene scene = createScene_1();
-    // const rt::Scene scene = createRandomScene(16);
+
+    const rt::Scene scenes[] = {
+        createScene_1(),
+        createScene_2(),
+        createRandomScene(8),
+        createRandomScene(16),
+    };
+    const int numScenes = sizeof(scenes) / sizeof(rt::Scene);
 
     const rt::Config configs[] = {
         {.bounceLimit = 5, .numSamples = 1},
@@ -154,7 +160,9 @@ int main() {
     };
     const int numConfigs = sizeof(configs) / sizeof(rt::Config);
 
+    unsigned sceneIdx = 0;
     unsigned configIdx = 2;
+    bool benchmarkMode = false;
     bool raytrace = true;
 
     // SetTargetFPS(0);
@@ -171,6 +179,15 @@ int main() {
             forceCameraUpdate = true;
         }
 
+        if (IsKeyPressed(KEY_B)) {
+            benchmarkMode = !benchmarkMode;
+            if (benchmarkMode) {
+                SetTargetFPS(0);
+            } else {
+                SetTargetFPS(30);
+            }
+        }
+
         if (IsKeyDown(KEY_C)) {
             if (IsKeyPressed(KEY_LEFT)) {
                 configIdx -= 1;
@@ -179,8 +196,18 @@ int main() {
                 configIdx += 1;
             }
         }
+        if (IsKeyDown(KEY_S)) {
+            if (IsKeyPressed(KEY_LEFT)) {
+                sceneIdx -= 1;
+                renderer.resetImage();
+            }
+            if (IsKeyPressed(KEY_RIGHT)) {
+                sceneIdx += 1;
+                renderer.resetImage();
+            }
+        }
 
-        renderer.render(camera, scene, configs[configIdx % numConfigs], forceCameraUpdate,
-                        raytrace);
+        renderer.render(camera, scenes[sceneIdx % numScenes], configs[configIdx % numConfigs],
+                        forceCameraUpdate, raytrace);
     }
 }
