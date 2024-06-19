@@ -45,38 +45,38 @@ void Renderer::render(const SceneCamera& camera, const rt::Scene& scene, const r
                        {0, 0, m_windowSize.x, m_windowSize.y}, {0, 0}, 0, WHITE);
     } else {
 
-        Camera3D rlCamera{
-            .position = camera.m_camera.position,
-            .target = Vector3Add(camera.m_camera.position, camera.m_direction),
-            .up = {0, 1, 0},
-            .fovy = camera.m_fov,
-            .projection = CAMERA_PERSPECTIVE,
-        };
+        // Camera3D rlCamera{
+        //     .position = camera.m_camera.position,
+        //     .target = Vector3Add(camera.m_camera.position, camera.m_direction),
+        //     .up = {0, 1, 0},
+        //     .fovy = camera.m_fov,
+        //     .projection = CAMERA_PERSPECTIVE,
+        // };
 
-        BeginMode3D(rlCamera);
+        // BeginMode3D(rlCamera);
 
-        for (const rt::Sphere& sph : scene.spheres) {
-            Color col = ColorFromNormalized({
-                scene.materials[sph.materialIndex].albedo.x,
-                scene.materials[sph.materialIndex].albedo.y,
-                scene.materials[sph.materialIndex].albedo.z,
-                1.0,
-            });
-            DrawSphere(sph.position, sph.radius, col);
-        }
+        // for (const rt::Sphere& sph : scene.spheres) {
+        //     Color col = ColorFromNormalized({
+        //         scene.materials[sph.materialIndex].albedo.x,
+        //         scene.materials[sph.materialIndex].albedo.y,
+        //         scene.materials[sph.materialIndex].albedo.z,
+        //         1.0,
+        //     });
+        //     DrawSphere(sph.position, sph.radius, col);
+        // }
 
-        for (const rt::Triangle& tri : scene.triangles) {
-            Color col = ColorFromNormalized({
-                scene.materials[tri.materialIndex].albedo.x,
-                scene.materials[tri.materialIndex].albedo.y,
-                scene.materials[tri.materialIndex].albedo.z,
-                1.0,
-            });
-            DrawTriangle3D(tri.v0, tri.v1, tri.v2, col);
-            DrawTriangle3D(tri.v0, tri.v2, tri.v1, col);
-        }
+        // for (const rt::Triangle& tri : scene.triangles) {
+        //     Color col = ColorFromNormalized({
+        //         scene.materials[tri.materialIndex].albedo.x,
+        //         scene.materials[tri.materialIndex].albedo.y,
+        //         scene.materials[tri.materialIndex].albedo.z,
+        //         1.0,
+        //     });
+        //     DrawTriangle3D(tri.v0, tri.v1, tri.v2, col);
+        //     DrawTriangle3D(tri.v0, tri.v2, tri.v1, col);
+        // }
 
-        EndMode3D();
+        // EndMode3D();
     }
 
     DrawFPS(10, 10);
@@ -153,8 +153,15 @@ void Renderer::updateCurrentScene() {
 
     rlEnableShader(m_computeShaderProgram);
 
-    const int materialBufferSize = sizeof(rt::Material) * scene.materials.size();
-    rlUpdateShaderBuffer(m_sceneMaterialsBuffer, scene.materials.data(), materialBufferSize, 0);
+    const int uniLoc_materialTexture = getUniformLoc("materialTexture");
+    rlSetUniformSampler(uniLoc_materialTexture, scene.material->getTextureId());
+
+    const int uniLoc_numMaterials = getUniformLoc("numMaterials");
+    int numMaterials = scene.material->getNumMaterials();
+    rlSetUniform(uniLoc_numMaterials, &numMaterials, RL_SHADER_UNIFORM_INT, 1);
+
+    // const int materialBufferSize = sizeof(rt::Material) * scene.materials.size();
+    // rlUpdateShaderBuffer(m_sceneMaterialsBuffer, scene.materials.data(), materialBufferSize, 0);
 
     setScene_spheres(scene);
     setScene_triangles(scene);

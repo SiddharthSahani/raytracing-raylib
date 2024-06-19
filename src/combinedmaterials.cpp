@@ -1,11 +1,12 @@
 
 #include "src/combinedmaterials.h"
 
-using namespace rt;
+
+namespace rt {
 
 
-Image createAlbedoImage(Color color, int size) {
-    Image res = GenImageColor(size, size, color);
+Image createAlbedoImage(Color color, int width, int height) {
+    Image res = GenImageColor(width, height, color);
     ImageFormat(&res, PIXELFORMAT_UNCOMPRESSED_R32G32B32A32);
     return res;
 }
@@ -23,7 +24,9 @@ CombinedMaterial::CombinedMaterial(int numMaterials, int size)
 }
 
 
-CombinedMaterial::~CombinedMaterial() { UnloadTexture(m_texture); }
+CombinedMaterial::~CombinedMaterial() {
+    UnloadTexture(m_texture);
+}
 
 
 void CombinedMaterial::addMaterial(const Material& material, int index) {
@@ -31,12 +34,16 @@ void CombinedMaterial::addMaterial(const Material& material, int index) {
     const float h = m_size / m_numMaterials;
     const float y = h * index;
 
-    Image temp = ImageCopy(material.m_albedoImage);
-    ImageResizeNN(&temp, w, h);
+    Image image = material.m_albedoImage;
 
-    UpdateTextureRec(m_texture, {0, y, w, h}, temp.data);
-
-    UnloadImage(temp);
+    if (image.width == w && image.height == h) {
+        UpdateTextureRec(m_texture, {0, y, w, h}, image.data);
+    } else {
+        Image temp = ImageCopy(image);
+        ImageResize(&temp, w, h);
+        UpdateTextureRec(m_texture, {0, y, w, h}, temp.data);
+        UnloadImage(temp);
+    }
 }
 
 
@@ -46,3 +53,6 @@ void CombinedMaterial::createTexture() {
     m_texture = LoadTextureFromImage(temp);
     UnloadImage(temp);
 }
+
+
+} // namespace rt

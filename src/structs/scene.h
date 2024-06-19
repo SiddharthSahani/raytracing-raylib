@@ -1,8 +1,8 @@
 
 #pragma once
 
-#include "src/structs/material.h"
 #include "src/structs/objects.h"
+#include "src/combinedmaterials.h"
 #include <vector>
 
 
@@ -12,10 +12,8 @@ namespace rt {
 struct Scene {
     std::vector<Sphere> spheres;
     std::vector<Triangle> triangles;
-    std::vector<Material> materials;
+    rt::CombinedMaterial* material;
     Color backgroundColor;
-
-    void addMaterial(Material mat) { materials.push_back(mat); }
 
     void addObject(Sphere obj) { spheres.push_back(obj); }
 

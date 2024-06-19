@@ -41,7 +41,7 @@ struct Triangle {
 struct Material {
     vec3 albedo;
     float roughness;
-    float emissionPower;
+    // float emissionPower;
 };
 
 
@@ -70,13 +70,13 @@ struct Config {
 // ----- UNIFORMS AND BUFFERS -----
 
 layout (rgba16f, binding = 0) uniform image2D outImage;
-layout (std430, binding = 1) readonly buffer materialBlock {
-    Material data[];
-} materials;
+
+uniform sampler2D materialTexture;
 
 uniform Camera camera;
 uniform SceneInfo sceneInfo;
 uniform Config config;
+uniform int numMaterials;
 uniform int frameIndex;
 
 
@@ -241,6 +241,18 @@ HitRecord traceRay(Ray ray) {
 }
 
 
+Material loadMaterial(int materialIndex, vec2 uv) {
+    float v = 1.0 / numMaterials * (materialIndex + uv.y);
+
+    float albedoU = 1.0 / 1.0 * (0 + uv.x);
+
+    Material material;
+    material.albedo = texture(materialTexture, vec2(albedoU, v)).rgb;
+    material.roughness = 0.0;
+    return material;
+}
+
+
 vec3 perPixel(inout uint rngState) {
     Ray ray = genRay();
     vec3 light = vec3(0.0, 0.0, 0.0);
@@ -254,14 +266,16 @@ vec3 perPixel(inout uint rngState) {
             break;
         }
 
-        light += materials.data[record.materialIndex].albedo * materials.data[record.materialIndex].emissionPower * contribution;
-        contribution *= materials.data[record.materialIndex].albedo;
+        Material material = loadMaterial(record.materialIndex, record.uv);
+
+        // light += materials.data[record.materialIndex].albedo * materials.data[record.materialIndex].emissionPower * contribution;
+        contribution *= material.albedo;
 
         vec3 diffuseDir = normalize(record.worldNormal + randomDirection(rngState));
         vec3 specularDir = reflect(ray.direction, record.worldNormal);
 
         ray.origin = record.worldPosition + record.worldNormal * 0.001;
-        ray.direction = normalize(mix(diffuseDir, specularDir, materials.data[record.materialIndex].roughness));
+        ray.direction = normalize(mix(diffuseDir, specularDir, material.roughness));
     }
 
     return light;
@@ -270,6 +284,8 @@ vec3 perPixel(inout uint rngState) {
 
 void main() {
     ivec2 pixelCoord = ivec2(gl_GlobalInvocationID.xy);
+    // vec2 coord = vec2(pixelCoord) / imageSize(outImage);
+    // imageStore(outImage, pixelCoord, texture(materialTexture, coord));
     uint rngState = pixelCoord.x * pixelCoord.y + uint(frameIndex) * 32421u;
 
     vec3 frameColor = vec3(0.0, 0.0, 0.0);
