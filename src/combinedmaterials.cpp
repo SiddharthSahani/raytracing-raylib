@@ -28,7 +28,7 @@ CombinedMaterial::~CombinedMaterial() {
 }
 
 
-void CombinedMaterial::addMaterial(const Material& material, int index) {
+void CombinedMaterial::setMaterial(const Material& material, int index) {
     const float w = m_size / 1;
     const float h = m_size / m_numMaterials;
     const float y = h * index;

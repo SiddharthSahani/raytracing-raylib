@@ -3,7 +3,7 @@
 
 #include "src/camera.h"
 #include "src/structs/config.h"
-#include "src/structs/scene.h"
+#include "src/scene.h"
 
 
 enum class SceneStorageType {

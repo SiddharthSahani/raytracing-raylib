@@ -26,7 +26,7 @@ class CombinedMaterial {
 public:
     CombinedMaterial(int numMaterials, int size);
     ~CombinedMaterial();
-    void addMaterial(const Material& material, int index);
+    void setMaterial(const Material& material, int index);
     int getTextureId() const { return m_texture.id; }
     int getNumMaterials() const { return m_numMaterials; }
 

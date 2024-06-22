@@ -10,14 +10,19 @@ namespace rt {
 
 
 struct Scene {
+
+    // `Scene` owns the pointer now
+    Scene(CombinedMaterial* materials);
+    ~Scene();
+
+    void addObject(const Sphere& obj);
+    void addObject(const Triangle& obj);
+
     std::vector<Sphere> spheres;
     std::vector<Triangle> triangles;
-    rt::CombinedMaterial* material;
     Color backgroundColor;
+    CombinedMaterial* materials = nullptr;
 
-    void addObject(Sphere obj) { spheres.push_back(obj); }
-
-    void addObject(Triangle obj) { triangles.push_back(obj); }
 };
 
 
