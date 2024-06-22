@@ -7,7 +7,6 @@ namespace rt {
 
 Image createAlbedoImage(Color color, int width, int height) {
     Image res = GenImageColor(width, height, color);
-    ImageFormat(&res, PIXELFORMAT_UNCOMPRESSED_R32G32B32A32);
     return res;
 }
 
@@ -49,7 +48,6 @@ void CombinedMaterial::addMaterial(const Material& material, int index) {
 
 void CombinedMaterial::createTexture() {
     Image temp = GenImageColor(m_size, m_size, BLANK);
-    ImageFormat(&temp, PIXELFORMAT_UNCOMPRESSED_R32G32B32A32);
     m_texture = LoadTextureFromImage(temp);
     UnloadImage(temp);
 }
