@@ -40,14 +40,28 @@
 
 rt::Scene createScene_1() {
 
-    rt::Scene scene = rt::Scene(
-        new rt::CombinedMaterial(4, 512)
-    );
+    rt::Scene scene = rt::Scene(new rt::PackedMaterialData(4, 512));
 
-    scene.materials->setMaterial(rt::Material(rt::createAlbedoImage({50, 230, 200, 255}, 128, 128)), 0);
-    scene.materials->setMaterial(rt::Material(rt::createAlbedoImage({200, 180, 190, 255}, 128, 128)), 1);
-    scene.materials->setMaterial(rt::Material(rt::createAlbedoImage({220, 220, 220, 255}, 128, 128)), 2);
-    scene.materials->setMaterial(rt::Material(rt::createAlbedoImage({210, 75, 75, 255}, 128, 128)), 3);
+    {
+        rt::Material mat;
+        mat.setAlbedo({.color = {50, 230, 200, 255}});
+        scene.materials->setMaterial(mat, 0);
+    }
+    {
+        rt::Material mat;
+        mat.setAlbedo({.color = {200, 180, 190, 255}});
+        scene.materials->setMaterial(mat, 1);
+    }
+    {
+        rt::Material mat;
+        mat.setAlbedo({.color = {220, 220, 220, 255}});
+        scene.materials->setMaterial(mat, 2);
+    }
+    {
+        rt::Material mat;
+        mat.setAlbedo({.color = {210, 75, 75, 255}});
+        scene.materials->setMaterial(mat, 3);
+    }
 
     {
         // rt::Material mat = rt::Material({50, 230, 200, 255}, 0.0, 0.0);
@@ -109,13 +123,13 @@ rt::Scene createScene_1() {
 //     {
 //         rt::Material mat = rt::Material({205, 205, 205, 255}, 1.0, 0.0);
 //         scene.setMaterial(mat);
-//         rt::Triangle tri = rt::Triangle({0.0, 2.0, -3.0}, {-2.0, 2.0, -2.0}, {0.0, -1.0, -3.0}, 3);
-//         scene.addObject(tri);
+//         rt::Triangle tri = rt::Triangle({0.0, 2.0, -3.0}, {-2.0, 2.0, -2.0}, {0.0, -1.0, -3.0},
+//         3); scene.addObject(tri);
 //     }
 
 //     {
-//         rt::Triangle tr = rt::Triangle({-2.0, 2.0, -2.0}, {0.0, -1.0, -3.0}, {-2.0, -1.0, -2.0}, 3);
-//         scene.addObject(tr);
+//         rt::Triangle tr = rt::Triangle({-2.0, 2.0, -2.0}, {0.0, -1.0, -3.0}, {-2.0, -1.0, -2.0},
+//         3); scene.addObject(tr);
 //     }
 
 //     scene.backgroundColor = {200, 200, 200, 255};
@@ -182,10 +196,10 @@ int main() {
             forceCameraUpdate = true;
         }
 
-        if (IsKeyPressed(KEY_SPACE)) {
-            raytrace = !raytrace;
-            forceCameraUpdate = true;
-        }
+        // if (IsKeyPressed(KEY_SPACE)) {
+        //     raytrace = !raytrace;
+        //     forceCameraUpdate = true;
+        // }
 
         if (IsKeyPressed(KEY_B)) {
             benchmarkMode = !benchmarkMode;
