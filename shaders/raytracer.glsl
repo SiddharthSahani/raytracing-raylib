@@ -161,7 +161,7 @@ bool hit(Sphere sphere, Ray ray, out HitRecord record) {
         record.hitDistance = t;
         record.materialIndex = sphere.materialIndex;
 
-        float u = 0.5 + atan(record.worldNormal.z, record.worldNormal.x) / (2*3.14);
+        float u = 0.5 - atan(record.worldNormal.z, record.worldNormal.x) / (2*3.14);
         float v = 0.5 - asin(record.worldNormal.y) / 3.14;
         record.uv = vec2(u, v);
 

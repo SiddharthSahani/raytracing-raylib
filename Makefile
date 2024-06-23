@@ -19,5 +19,5 @@ $(TARGET): main.cpp $(OBJECTS)
 
 
 clean:
-	rm -rf $(wildcard src/*.o)
-	rm $(TARGET)
+	rm -f $(wildcard src/*.o)
+	rm -f $(TARGET)

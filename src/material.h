@@ -21,7 +21,7 @@ public:
     ~Material();
     void setAlbedo(AlbedoInfo info);
     void setAlbedo(const char* filepath);
-    void setAlbedo(Image& image);
+    void setAlbedo(Image image);
     Image make(int width, int height);
 
 private:

@@ -30,8 +30,8 @@ void Material::setAlbedo(const char* filepath) {
 }
 
 
-void Material::setAlbedo(Image& image) {
-    ImageFormat(&image, PIXELFORMAT_UNCOMPRESSED_R8G8B8);
+void Material::setAlbedo(Image image) {
+    ImageFormat(&image, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
     m_albedoData = image;
 }
 
