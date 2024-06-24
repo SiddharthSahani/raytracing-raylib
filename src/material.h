@@ -11,6 +11,7 @@ namespace rt {
 
 struct AlbedoInfo {
     Color color;
+    float deviation = 0.0;
 };
 
 

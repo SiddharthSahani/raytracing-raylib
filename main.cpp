@@ -40,26 +40,26 @@
 
 rt::Scene createScene_1() {
 
-    rt::Scene scene = rt::Scene(new rt::PackedMaterialData(4, 512));
+    rt::Scene scene = rt::Scene(new rt::PackedMaterialData(4, 1024));
 
     {
         rt::Material mat;
-        mat.setAlbedo({.color = {50, 230, 200, 255}});
+        mat.setAlbedo({.color = {50, 230, 200, 255}, .deviation = 0.05});
         scene.materials->setMaterial(mat, 0);
     }
     {
         rt::Material mat;
-        mat.setAlbedo({.color = {200, 180, 190, 255}});
+        mat.setAlbedo({.color = {200, 180, 190, 255}, .deviation = 0.01});
         scene.materials->setMaterial(mat, 1);
     }
     {
         rt::Material mat;
-        mat.setAlbedo({.color = {220, 220, 220, 255}});
+        mat.setAlbedo({.color = {220, 220, 220, 255}, .deviation = 0.02});
         scene.materials->setMaterial(mat, 2);
     }
     {
         rt::Material mat;
-        mat.setAlbedo({.color = {210, 75, 75, 255}});
+        mat.setAlbedo({.color = {210, 75, 75, 255}, .deviation = 0.1});
         scene.materials->setMaterial(mat, 3);
     }
 
