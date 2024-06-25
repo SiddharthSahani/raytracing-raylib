@@ -11,7 +11,13 @@ namespace rt {
 
 struct AlbedoInfo {
     Color color;
-    float deviation = 0.0;
+    float deviation;
+};
+
+
+struct RoughnessInfo {
+    float value;
+    float deviation;
 };
 
 
@@ -23,10 +29,14 @@ public:
     void setAlbedo(AlbedoInfo info);
     void setAlbedo(const char* filepath);
     void setAlbedo(Image image);
+    void setRoughness(RoughnessInfo info);
+    void setRoughness(const char* filepath);
+    void setRoughness(Image image);
     Image make(int width, int height);
 
 private:
     std::variant<AlbedoInfo, Image> m_albedoData;
+    std::variant<RoughnessInfo, Image> m_roughnessData;
 };
 
 

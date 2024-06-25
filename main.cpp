@@ -45,6 +45,8 @@ rt::Scene createScene_1() {
     {
         rt::Material mat;
         mat.setAlbedo({.color = {50, 230, 200, 255}, .deviation = 0.05});
+        // mat.setAlbedo("earthmap1k.png");
+        // mat.setRoughness("earthmap1k.png");
         scene.materials->setMaterial(mat, 0);
     }
     {
@@ -55,6 +57,7 @@ rt::Scene createScene_1() {
     {
         rt::Material mat;
         mat.setAlbedo({.color = {220, 220, 220, 255}, .deviation = 0.02});
+        mat.setRoughness({.value = 0.0, .deviation = 0.003});
         scene.materials->setMaterial(mat, 2);
     }
     {

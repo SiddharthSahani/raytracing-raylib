@@ -244,11 +244,14 @@ HitRecord traceRay(Ray ray) {
 Material loadMaterial(int materialIndex, vec2 uv) {
     float v = 1.0 / numMaterials * (materialIndex + uv.y);
 
-    float albedoU = 1.0 / 1.0 * (0 + uv.x);
+    // ar: albedo and roughness
+    float u_ar = 1.0 / 1.0 * (0 + uv.x);
+    vec4 value_ar = texture(materialTexture, vec2(u_ar, v));
 
     Material material;
-    material.albedo = texture(materialTexture, vec2(albedoU, v)).rgb;
-    material.roughness = 0.0;
+    material.albedo = value_ar.rgb;
+    material.roughness = value_ar.a;
+
     return material;
 }
 
@@ -275,7 +278,7 @@ vec3 perPixel(inout uint rngState) {
         vec3 specularDir = reflect(ray.direction, record.worldNormal);
 
         ray.origin = record.worldPosition + record.worldNormal * 0.001;
-        ray.direction = normalize(mix(diffuseDir, specularDir, material.roughness));
+        ray.direction = normalize(mix(specularDir, diffuseDir, material.roughness));
     }
 
     return light;
