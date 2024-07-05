@@ -9,16 +9,22 @@ namespace rt {
 class PackedMaterialData {
 
 public:
-    PackedMaterialData(int materialCount, int textureSize);
+    PackedMaterialData(int materialCount, Vector2 textureSize);
     ~PackedMaterialData();
-    void setMaterial(Material& material, int index);
-    int getTextureId() const { return m_materialsData.id; }
-    int getNumMaterials() const { return m_materialCount; }
+    void setMaterial(int index, const Material& material);
+    int getTextureId() const { return m_renderTexture.texture.id; }
+    int getMaterialCount() const { return m_materialCount; }
 
 private:
-    int m_materialCount = 0;
-    int m_textureSize = 0;
-    Texture m_materialsData;
+    void createTexture();
+    void createShader();
+
+private:
+    int m_materialCount;
+    Vector2 m_textureSize;
+    RenderTexture m_renderTexture;
+    Shader m_shader;
+
 };
 
 

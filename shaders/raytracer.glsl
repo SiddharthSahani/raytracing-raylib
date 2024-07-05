@@ -301,4 +301,6 @@ void main() {
 
     vec3 avgColor = (accumColor * (frameIndex-1) + frameColor) / frameIndex;
     imageStore(outImage, pixelCoord, vec4(avgColor, 1.0));
+
+    // imageStore(outImage, pixelCoord, vec4(frameColor, 1.0));
 }

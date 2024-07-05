@@ -32,11 +32,12 @@ public:
     void setRoughness(RoughnessInfo info);
     void setRoughness(const char* filepath);
     void setRoughness(Image image);
-    Image make(int width, int height);
 
 private:
     std::variant<AlbedoInfo, Image> m_albedoData;
     std::variant<RoughnessInfo, Image> m_roughnessData;
+
+    friend class PackedMaterialData;
 };
 
 

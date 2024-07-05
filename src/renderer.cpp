@@ -157,7 +157,7 @@ void Renderer::updateCurrentScene() {
     rlSetUniformSampler(uniLoc_materialTexture, scene.materials->getTextureId());
 
     const int uniLoc_numMaterials = getUniformLoc("numMaterials");
-    int numMaterials = scene.materials->getNumMaterials();
+    int numMaterials = scene.materials->getMaterialCount();
     rlSetUniform(uniLoc_numMaterials, &numMaterials, RL_SHADER_UNIFORM_INT, 1);
 
     // const int materialBufferSize = sizeof(rt::Material) * scene.materials.size();
