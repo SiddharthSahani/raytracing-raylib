@@ -44,26 +44,26 @@ rt::Scene createScene_1() {
 
     {
         rt::Material mat;
-        mat.setAlbedo({.color = {50, 230, 200, 255}, .deviation = 0.05});
+        mat.setAlbedo({.value = {0.2, 0.9, 0.8}, .deviation = 0.05});
         // mat.setAlbedo("earthmap1k.png");
         // mat.setRoughness("earthmap1k.png");
         scene.materials->setMaterial(0, mat);
     }
     {
         rt::Material mat;
-        mat.setAlbedo({.color = {200, 180, 190, 255}, .deviation = 0.01});
+        mat.setAlbedo({.value = {0.8, 0.7, 0.7}, .deviation = 0.01});
         // mat.setAlbedo("earthmap1k.png");
         scene.materials->setMaterial(1, mat);
     }
     {
         rt::Material mat;
-        mat.setAlbedo({.color = {220, 220, 220, 255}, .deviation = 0.02});
+        mat.setAlbedo({.value = {0.8, 0.8, 0.8}, .deviation = 0.02});
         mat.setRoughness({.value = 0.0, .deviation = 0.005});
         scene.materials->setMaterial(2, mat);
     }
     {
         rt::Material mat;
-        mat.setAlbedo({.color = {210, 75, 75, 255}, .deviation = 0.1});
+        mat.setAlbedo({.value = {0.8, 0.3, 0.3}, .deviation = 0.1});
         scene.materials->setMaterial(3, mat);
     }
 

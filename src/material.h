@@ -9,13 +9,13 @@
 namespace rt {
 
 
-struct AlbedoInfo {
-    Color color;
+struct RGB_ChannelInfo {
+    Vector3 value;
     float deviation;
 };
 
 
-struct RoughnessInfo {
+struct A_ChannelInfo {
     float value;
     float deviation;
 };
@@ -26,16 +26,27 @@ class Material {
 public:
     Material();
     ~Material();
-    void setAlbedo(AlbedoInfo info);
+    void setAlbedo(RGB_ChannelInfo info);
     void setAlbedo(const char* filepath);
     void setAlbedo(Image image);
-    void setRoughness(RoughnessInfo info);
+    void setRoughness(A_ChannelInfo info);
     void setRoughness(const char* filepath);
     void setRoughness(Image image);
 
 private:
-    std::variant<AlbedoInfo, Image> m_albedoData;
-    std::variant<RoughnessInfo, Image> m_roughnessData;
+    struct BlockInfo {
+        Vector4 mean;
+        Vector2 deviation;
+        Vector2 useTextures;
+        Texture textures[2];
+    };
+
+private:
+    BlockInfo getBlockInfo(int blockIndex) const;
+
+private:
+    std::variant<RGB_ChannelInfo, Image> m_albedoData;
+    std::variant<A_ChannelInfo, Image> m_roughnessData;
 
     friend class PackedMaterialData;
 };

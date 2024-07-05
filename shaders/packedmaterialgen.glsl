@@ -6,12 +6,12 @@ uniform vec2 uResolution;
 uniform vec2 uGridSize;
 uniform vec2 uCurrent;
 
+uniform vec4 mean;
+uniform vec2 deviation;
+uniform vec2 useTextures;
+
 uniform sampler2D uTextureRGB;
 uniform sampler2D uTextureA;
-
-uniform vec4 meanRGBA;
-uniform vec2 stddevRGBA;
-uniform vec2 useTextureRGBA;
 
 
 uint nextRandom(inout uint state) {
@@ -27,12 +27,12 @@ float randomFloat(inout uint state) {
 }
 
 
-float randomNormalFloat(inout uint seed, float mean, float stddev) {
+float randomNormalFloat(inout uint seed, float mean, float deviation) {
     float theta = 2.0f * 3.1415926 * randomFloat(seed);
     float rho = sqrt(-2.0f * log(randomFloat(seed)));
     float mult = rho * cos(theta);
 
-    return mult * stddev + mean;
+    return mult * deviation + mean;
 }
 
 
@@ -50,24 +50,24 @@ void main() {
     }
 
     vec2 uv = fract(outUv / offset);
-    uint seed = uint(gl_FragCoord.x * gl_FragCoord.y + dot(stddevRGBA, vec2(100.0)));
+    uint seed = uint(gl_FragCoord.x * gl_FragCoord.y + dot(deviation, vec2(100.0)));
 
     vec4 color;
 
-    if (useTextureRGBA.x == 1.0) {
+    if (useTextures.x == 1.0) {
         color.rgb = texture(uTextureRGB, uv).rgb;
     } else {
         color.rgb = vec3(
-            randomNormalFloat(seed, meanRGBA.r, stddevRGBA.x),
-            randomNormalFloat(seed, meanRGBA.g, stddevRGBA.x),
-            randomNormalFloat(seed, meanRGBA.b, stddevRGBA.x)
+            randomNormalFloat(seed, mean.r, deviation.x),
+            randomNormalFloat(seed, mean.g, deviation.x),
+            randomNormalFloat(seed, mean.b, deviation.x)
         );
     }
 
-    if (useTextureRGBA.y == 1.0) {
+    if (useTextures.y == 1.0) {
         color.a = texture(uTextureA, uv).a;
     } else {
-        color.a = randomNormalFloat(seed, meanRGBA.a, stddevRGBA.y);
+        color.a = randomNormalFloat(seed, mean.a, deviation.y);
     }
 
     color = clamp(color, 0.0, 1.0);
