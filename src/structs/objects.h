@@ -5,28 +5,20 @@
 #include <raylib/raymath.h> // Vector3Normalize
 
 
-namespace rt {
+namespace rt::internal {
 
 
 struct Sphere {
-
     // 16 bytes
     Vector3 position;
     float radius;
     // 16 bytes
     float materialIndex;
     float _padding_1[3];
-
-    Sphere(Vector3 _position, float _radius, int _materialIndex) {
-        position = _position;
-        radius = _radius;
-        materialIndex = (float)_materialIndex;
-    }
 };
 
 
 struct Triangle {
-
     // 16 bytes
     Vector3 v0;
     float _padding_1;
@@ -43,18 +35,7 @@ struct Triangle {
     Vector2 uv2;
     float materialIndex;
     float _padding_4;
-
-    Triangle(Vector3 _v0, Vector3 _v1, Vector3 _v2, int _materialIndex, Vector2 _uv0 = {0, 0},
-             Vector2 _uv1 = {0, 1}, Vector2 _uv2 = {1, 0}) {
-        v0 = _v0;
-        v1 = _v1;
-        v2 = _v2;
-        materialIndex = (float)_materialIndex;
-        uv0 = _uv0;
-        uv1 = _uv1;
-        uv2 = _uv2;
-    }
 };
 
 
-} // namespace rt
+} // namespace rt::internal

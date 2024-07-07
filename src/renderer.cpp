@@ -19,11 +19,11 @@ Renderer::~Renderer() {
 }
 
 
-void Renderer::render(const SceneCamera& camera, const rt::Scene& scene, const rt::Config& config,
-                      bool forceCameraUpdate) {
+void Renderer::render(const SceneCamera& camera, const rt::CompiledScene& scene,
+                      const rt::Config& config, bool forceCameraUpdate) {
 
     BeginDrawing();
-    ClearBackground(scene.backgroundColor);
+    ClearBackground(GREEN);
 
     if (forceCameraUpdate || m_camera != &camera) {
         m_camera = &camera;
@@ -115,15 +115,15 @@ void Renderer::updateCurrentCamera() {
 
 
 void Renderer::updateCurrentScene() {
-    const rt::Scene& scene = *m_scene;
+    const rt::CompiledScene& scene = *m_scene;
 
     rlEnableShader(m_computeShaderProgram);
 
     const int uniLoc_materialTexture = getUniformLoc("materialTexture");
-    rlSetUniformSampler(uniLoc_materialTexture, scene.materials->getTextureId());
+    rlSetUniformSampler(uniLoc_materialTexture, scene.m_materialData->getTextureId());
 
     const int uniLoc_numMaterials = getUniformLoc("numMaterials");
-    float numMaterials = scene.materials->getMaterialCount();
+    float numMaterials = scene.m_materialData->getMaterialCount();
     rlSetUniform(uniLoc_numMaterials, &numMaterials, RL_SHADER_UNIFORM_FLOAT, 1);
 
     setScene_spheres(scene);
@@ -132,8 +132,7 @@ void Renderer::updateCurrentScene() {
     const int uniLoc_backgroundColor = getUniformLoc("sceneInfo.backgroundColor");
     const int uniLoc_numSpheres = getUniformLoc("sceneInfo.numSpheres");
 
-    const Vector4 backgroundColorVec = ColorNormalize(scene.backgroundColor);
-    rlSetUniform(uniLoc_backgroundColor, &backgroundColorVec, RL_SHADER_UNIFORM_VEC3, 1);
+    rlSetUniform(uniLoc_backgroundColor, &scene.m_backgroundColor, RL_SHADER_UNIFORM_VEC3, 1);
 }
 
 
@@ -201,14 +200,14 @@ void Renderer::makeBufferObjects() {
 }
 
 
-void Renderer::setScene_spheres(const rt::Scene& scene) {
-    unsigned numSpheres = scene.spheres.size();
+void Renderer::setScene_spheres(const rt::CompiledScene& scene) {
+    unsigned numSpheres = scene.m_spheres.size();
 
     if (m_compileParams.storageType == SceneStorageType::Uniforms) {
         numSpheres = std::min(numSpheres, m_compileParams.maxSphereCount);
 
         for (int i = 0; i < numSpheres; i++) {
-            const rt::Sphere& obj = scene.spheres[i];
+            const rt::internal::Sphere& obj = scene.m_spheres[i];
             const char* base = TextFormat("sceneSpheres.data[%d]", i);
             char copy[1024];
             TextCopy(copy, base);
@@ -227,7 +226,7 @@ void Renderer::setScene_spheres(const rt::Scene& scene) {
     } else {
 
         const unsigned sphereBufferSize = sizeof(rt::Sphere) * numSpheres;
-        rlUpdateShaderBuffer(m_sceneSpheresBuffer, scene.spheres.data(), sphereBufferSize, 0);
+        rlUpdateShaderBuffer(m_sceneSpheresBuffer, scene.m_spheres.data(), sphereBufferSize, 0);
     }
 
     const int uniLoc_numSpheres = getUniformLoc("sceneInfo.numSpheres");
@@ -235,14 +234,14 @@ void Renderer::setScene_spheres(const rt::Scene& scene) {
 }
 
 
-void Renderer::setScene_triangles(const rt::Scene& scene) {
-    unsigned numTriangles = scene.triangles.size();
+void Renderer::setScene_triangles(const rt::CompiledScene& scene) {
+    unsigned numTriangles = scene.m_triangles.size();
 
     if (m_compileParams.storageType == SceneStorageType::Uniforms) {
         numTriangles = std::min(numTriangles, m_compileParams.maxTriangleCount);
 
         for (int i = 0; i < numTriangles; i++) {
-            const rt::Triangle& obj = scene.triangles[i];
+            const rt::internal::Triangle& obj = scene.m_triangles[i];
             const char* base = TextFormat("sceneTriangles.data[%d]", i);
             char copy[1024];
             TextCopy(copy, base);
@@ -272,7 +271,7 @@ void Renderer::setScene_triangles(const rt::Scene& scene) {
     } else {
 
         const unsigned triangleBufferSize = sizeof(rt::Triangle) * numTriangles;
-        rlUpdateShaderBuffer(m_sceneTrianglesBuffer, scene.triangles.data(), triangleBufferSize, 0);
+        rlUpdateShaderBuffer(m_sceneTrianglesBuffer, scene.m_triangles.data(), triangleBufferSize, 0);
     }
 
     const int uniLoc_numTriangles = getUniformLoc("sceneInfo.numTriangles");

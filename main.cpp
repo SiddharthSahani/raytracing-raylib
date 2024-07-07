@@ -38,57 +38,61 @@
 // }
 
 
-rt::Scene createScene_1() {
+rt::CompiledScene createScene_1() {
 
-    rt::Scene scene(new rt::PackedMaterialData(4, {512, 512}));
+    rt::Scene scene;
 
-    {
-        rt::Material mat;
-        mat.setAlbedo({.value = {0.2, 0.9, 0.8}, .deviation = 0.05});
-        // mat.setAlbedo("earthmap1k.png");
-        // mat.setRoughness("earthmap1k.png");
-        scene.materials->setMaterial(0, mat);
-    }
-    {
-        rt::Material mat;
-        mat.setAlbedo({.value = {0.8, 0.7, 0.7}, .deviation = 0.01});
-        // mat.setAlbedo("earthmap1k.png");
-        scene.materials->setMaterial(1, mat);
-    }
-    {
-        rt::Material mat;
-        mat.setAlbedo({.value = {0.8, 0.8, 0.8}, .deviation = 0.02});
-        mat.setRoughness({.value = 0.0, .deviation = 0.005});
-        scene.materials->setMaterial(2, mat);
-    }
-    {
-        rt::Material mat;
-        mat.setAlbedo({.value = {0.8, 0.3, 0.3}, .deviation = 0.1});
-        scene.materials->setMaterial(3, mat);
-    }
+    // defining materials
+    auto sphereMat = std::make_shared<rt::Material>();
+    auto redMat = std::make_shared<rt::Material>();
+    auto mirrorMat = std::make_shared<rt::Material>();
 
+    sphereMat->setAlbedo({.value = {0.2, 0.9, 0.8}, .deviation = 0.03});
+    // sphereMat->setAlbedo("earthmap1k.png");
+
+    redMat->setAlbedo({.value = {0.8, 0.3, 0.3}, .deviation = 0.1});
+
+    mirrorMat->setAlbedo({.value = {0.8, 0.8, 0.8}, .deviation = 0.02});
+    mirrorMat->setRoughness({.value = 0.0, .deviation = 0.01});
+
+    // defining objects
     {
-        rt::Sphere centerSphere = rt::Sphere({0, 0, 0}, 1.0, 0);
+        rt::Sphere centerSphere = {
+            .position = {0, 0, 0},
+            .radius = 1.0,
+            .material = sphereMat,
+        };
         scene.addObject(centerSphere);
     }
-
     {
-        rt::Sphere groundSphere = rt::Sphere({0, -6, 0}, 5.0, 1);
+        rt::Sphere groundSphere = {
+            .position = {0, -6, 0},
+            .radius = 5.0,
+            .material = sphereMat,
+        };
         scene.addObject(groundSphere);
     }
-
     {
-        rt::Triangle triangle = rt::Triangle({-1.3, 0, -1.2}, {-2, 1.1, 1}, {-2, -1.1, 1}, 2);
-        scene.addObject(triangle);
+        rt::Triangle mirror = {
+            .v0 = {-1.3, +0.0, -1.2},
+            .v1 = {-2.0, +1.1, +1.0},
+            .v2 = {-2.0, -1.1, +1.0},
+            .material = mirrorMat,
+        };
+        scene.addObject(mirror);
     }
-
     {
-        rt::Sphere glowingSphere = rt::Sphere({-1.3, 0, -1.2}, 0.1, 3);
+        rt::Sphere glowingSphere = {
+            .position = {-1.3, 0, -1.2},
+            .radius = 0.1,
+            .material = redMat,
+        };
         scene.addObject(glowingSphere);
     }
 
     scene.backgroundColor = {200, 200, 200, 255};
-    return scene;
+
+    return rt::CompiledScene(scene, {4096, 4096});
 }
 
 
@@ -162,13 +166,13 @@ int main() {
 
     SceneCamera camera(camPosition, camDirection, camFov, {imageWidth, imageHeight}, camParams);
 
-    const rt::Scene scenes[] = {
+    const rt::CompiledScene scenes[] = {
         createScene_1(),
         // createScene_2(),
         // createRandomScene(8),
         // createRandomScene(16),
     };
-    const int numScenes = sizeof(scenes) / sizeof(rt::Scene);
+    const int numScenes = sizeof(scenes) / sizeof(rt::CompiledScene);
 
     const rt::Config configs[] = {
         {.numSamples = 1, .bounceLimit = 5},
@@ -218,7 +222,7 @@ int main() {
             }
         }
 
-        const rt::Scene& scene = scenes[sceneIdx % numScenes];
+        const rt::CompiledScene& scene = scenes[sceneIdx % numScenes];
         const rt::Config& config = configs[configIdx % numConfigs];
         renderer.render(camera, scene, config, cameraUpdated);
     }

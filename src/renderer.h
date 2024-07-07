@@ -2,7 +2,7 @@
 #pragma once
 
 #include "src/camera.h"
-#include "src/scene.h"
+#include "src/compiledscene.h"
 #include "src/structs/config.h"
 
 
@@ -25,7 +25,7 @@ class Renderer {
 public:
     Renderer(Vector2 windowSize, Vector2 imageSize);
     ~Renderer();
-    void render(const SceneCamera& camera, const rt::Scene& scene, const rt::Config& config,
+    void render(const SceneCamera& camera, const rt::CompiledScene& scene, const rt::Config& config,
                 bool forceCameraUpdate = false);
     void compileComputeShader(CompileShaderParams params);
     void resetImage();
@@ -42,8 +42,8 @@ private:
     void updateCurrentCamera();
     void updateCurrentScene();
     void updateCurrentConfig();
-    void setScene_spheres(const rt::Scene& scene);
-    void setScene_triangles(const rt::Scene& scene);
+    void setScene_spheres(const rt::CompiledScene& scene);
+    void setScene_triangles(const rt::CompiledScene& scene);
 
 private:
     Vector2 m_windowSize;
@@ -51,7 +51,7 @@ private:
     Texture m_outImage;
 
     const SceneCamera* m_camera = nullptr;
-    const rt::Scene* m_scene = nullptr;
+    const rt::CompiledScene* m_scene = nullptr;
     const rt::Config* m_config = nullptr;
 
     int m_frameIndex = 0;

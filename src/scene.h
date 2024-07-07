@@ -1,8 +1,7 @@
 
 #pragma once
 
-#include "src/packedmaterialdata.h"
-#include "src/structs/objects.h"
+#include "src/hittable.h"
 #include <vector>
 
 
@@ -11,17 +10,12 @@ namespace rt {
 
 struct Scene {
 
-    // `Scene` owns the pointer now
-    Scene(PackedMaterialData* materials);
-    ~Scene();
-
-    void addObject(const Sphere& obj);
-    void addObject(const Triangle& obj);
+    void addObject(const Sphere& obj) { spheres.push_back(obj); }
+    void addObject(const Triangle& obj) { triangles.push_back(obj); }
 
     std::vector<Sphere> spheres;
     std::vector<Triangle> triangles;
     Color backgroundColor;
-    PackedMaterialData* materials = nullptr;
 };
 
 

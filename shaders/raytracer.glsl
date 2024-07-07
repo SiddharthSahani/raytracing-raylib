@@ -287,8 +287,11 @@ vec3 perPixel(inout uint rngState) {
 
 void main() {
     ivec2 pixelCoord = ivec2(gl_GlobalInvocationID.xy);
-    // vec2 coord = vec2(pixelCoord) / imageSize(outImage);
-    // imageStore(outImage, pixelCoord, texture(materialTexture, coord));
+
+#if 0
+    vec2 coord = vec2(pixelCoord) / imageSize(outImage);
+    imageStore(outImage, pixelCoord, texture(materialTexture, coord));
+#else
     uint rngState = pixelCoord.x * pixelCoord.y + uint(frameIndex) * 32421u;
 
     vec3 frameColor = vec3(0.0, 0.0, 0.0);
@@ -303,4 +306,5 @@ void main() {
     imageStore(outImage, pixelCoord, vec4(avgColor, 1.0));
 
     // imageStore(outImage, pixelCoord, vec4(frameColor, 1.0));
+#endif
 }
