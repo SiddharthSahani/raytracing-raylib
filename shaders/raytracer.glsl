@@ -23,7 +23,7 @@ struct Ray {
 struct Sphere {
     vec3 position;
     float radius;
-    int materialIndex;
+    float materialIndex;
 };
 
 
@@ -34,7 +34,7 @@ struct Triangle {
     vec2 uv0;
     vec2 uv1;
     vec2 uv2;
-    int materialIndex;
+    float materialIndex;
 };
 
 
@@ -49,7 +49,7 @@ struct HitRecord {
     vec3 worldPosition;
     float hitDistance;
     vec3 worldNormal;
-    int materialIndex;
+    float materialIndex;
     vec2 uv;
 };
 
@@ -76,7 +76,7 @@ uniform sampler2D materialTexture;
 uniform Camera camera;
 uniform SceneInfo sceneInfo;
 uniform Config config;
-uniform int numMaterials;
+uniform float numMaterials;
 uniform int frameIndex;
 
 
@@ -241,7 +241,7 @@ HitRecord traceRay(Ray ray) {
 }
 
 
-Material loadMaterial(int materialIndex, vec2 uv) {
+Material loadMaterial(float materialIndex, vec2 uv) {
     float v = 1.0 / numMaterials * (materialIndex + uv.y);
 
     // ar: albedo and roughness

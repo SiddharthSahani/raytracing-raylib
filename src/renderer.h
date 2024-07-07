@@ -2,8 +2,8 @@
 #pragma once
 
 #include "src/camera.h"
-#include "src/structs/config.h"
 #include "src/scene.h"
+#include "src/structs/config.h"
 
 
 enum class SceneStorageType {
@@ -26,7 +26,7 @@ public:
     Renderer(Vector2 windowSize, Vector2 imageSize);
     ~Renderer();
     void render(const SceneCamera& camera, const rt::Scene& scene, const rt::Config& config,
-                bool forceCameraUpdate = false, bool raytrace = true);
+                bool forceCameraUpdate = false);
     void compileComputeShader(CompileShaderParams params);
     void resetImage();
 

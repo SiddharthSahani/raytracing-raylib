@@ -40,7 +40,7 @@
 
 rt::Scene createScene_1() {
 
-    rt::Scene scene = rt::Scene(new rt::PackedMaterialData(4, {512, 512}));
+    rt::Scene scene(new rt::PackedMaterialData(4, {512, 512}));
 
     {
         rt::Material mat;
@@ -68,29 +68,21 @@ rt::Scene createScene_1() {
     }
 
     {
-        // rt::Material mat = rt::Material({50, 230, 200, 255}, 0.0, 0.0);
-        // scene.setMaterial(mat);
         rt::Sphere centerSphere = rt::Sphere({0, 0, 0}, 1.0, 0);
         scene.addObject(centerSphere);
     }
 
     {
-        // rt::Material mat = rt::Material({200, 180, 190, 255}, 0.8, 0.0);
-        // scene.setMaterial(mat);
         rt::Sphere groundSphere = rt::Sphere({0, -6, 0}, 5.0, 1);
         scene.addObject(groundSphere);
     }
 
     {
-        // rt::Material mat = rt::Material({220, 220, 220, 255}, 1.0, 0.0);
-        // scene.setMaterial(mat);
         rt::Triangle triangle = rt::Triangle({-1.3, 0, -1.2}, {-2, 1.1, 1}, {-2, -1.1, 1}, 2);
         scene.addObject(triangle);
     }
 
     {
-        // rt::Material mat = rt::Material({210, 75, 70, 255}, 1.0, 50.0);
-        // scene.setMaterial(mat);
         rt::Sphere glowingSphere = rt::Sphere({-1.3, 0, -1.2}, 0.1, 3);
         scene.addObject(glowingSphere);
     }
@@ -179,31 +171,24 @@ int main() {
     const int numScenes = sizeof(scenes) / sizeof(rt::Scene);
 
     const rt::Config configs[] = {
-        {.bounceLimit = 5, .numSamples = 1},
-        {.bounceLimit = 5, .numSamples = 4},
-        {.bounceLimit = 5, .numSamples = 16},
-        {.bounceLimit = 5, .numSamples = 32},
+        {.numSamples = 1, .bounceLimit = 5},
+        {.numSamples = 4, .bounceLimit = 5},
+        {.numSamples = 16, .bounceLimit = 5},
+        {.numSamples = 32, .bounceLimit = 5},
     };
     const int numConfigs = sizeof(configs) / sizeof(rt::Config);
 
     unsigned sceneIdx = 0;
     unsigned configIdx = 2;
     bool benchmarkMode = false;
-    bool raytrace = true;
 
-    // SetTargetFPS(0);
     while (!WindowShouldClose()) {
-        bool forceCameraUpdate = false;
+        bool cameraUpdated = false;
 
         if (camera.update(GetFrameTime())) {
             renderer.resetImage();
-            forceCameraUpdate = true;
+            cameraUpdated = true;
         }
-
-        // if (IsKeyPressed(KEY_SPACE)) {
-        //     raytrace = !raytrace;
-        //     forceCameraUpdate = true;
-        // }
 
         if (IsKeyPressed(KEY_B)) {
             benchmarkMode = !benchmarkMode;
@@ -233,7 +218,8 @@ int main() {
             }
         }
 
-        renderer.render(camera, scenes[sceneIdx % numScenes], configs[configIdx % numConfigs],
-                        forceCameraUpdate, raytrace);
+        const rt::Scene& scene = scenes[sceneIdx % numScenes];
+        const rt::Config& config = configs[configIdx % numConfigs];
+        renderer.render(camera, scene, config, cameraUpdated);
     }
 }

@@ -8,7 +8,7 @@ namespace rt {
 PackedMaterialData::PackedMaterialData(int materialCount, Vector2 textureSize)
     : m_materialCount(materialCount), m_textureSize(textureSize) {
 
-    createTexture();
+    createFrameBuffer();
     createShader();
 }
 
@@ -42,7 +42,7 @@ void PackedMaterialData::setMaterial(int index, const Material& material) {
 
     for (int i = 0; i < 1; i++) {
         const Material::BlockInfo info = material.getBlockInfo(i);
-        const Vector2 uCurrent = {(float) i, (float) index};
+        const Vector2 uCurrent = {(float)i, (float)index};
 
         BeginShaderMode(m_shader);
         SetShaderValue(m_shader, uCurrent_uniLoc, &uCurrent, SHADER_UNIFORM_VEC2);
@@ -68,7 +68,7 @@ void PackedMaterialData::setMaterial(int index, const Material& material) {
 }
 
 
-void PackedMaterialData::createTexture() {
+void PackedMaterialData::createFrameBuffer() {
     m_renderTexture = LoadRenderTexture(m_textureSize.x, m_textureSize.y);
 }
 

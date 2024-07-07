@@ -16,7 +16,7 @@ public:
     int getMaterialCount() const { return m_materialCount; }
 
 private:
-    void createTexture();
+    void createFrameBuffer();
     void createShader();
 
 private:
@@ -24,7 +24,6 @@ private:
     Vector2 m_textureSize;
     RenderTexture m_renderTexture;
     Shader m_shader;
-
 };
 
 

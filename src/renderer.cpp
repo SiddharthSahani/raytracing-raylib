@@ -20,71 +20,37 @@ Renderer::~Renderer() {
 
 
 void Renderer::render(const SceneCamera& camera, const rt::Scene& scene, const rt::Config& config,
-                      bool forceCameraUpdate, bool raytrace) {
+                      bool forceCameraUpdate) {
 
     BeginDrawing();
     ClearBackground(scene.backgroundColor);
 
-    if (raytrace) {
-        if (forceCameraUpdate || m_camera != &camera) {
-            m_camera = &camera;
-            updateCurrentCamera();
-        }
-        if (m_scene != &scene) {
-            m_scene = &scene;
-            updateCurrentScene();
-        }
-        if (m_config != &config) {
-            m_config = &config;
-            updateCurrentConfig();
-        }
-
-        runComputeShader();
-
-        DrawTexturePro(m_outImage, {0, 0, m_imageSize.x, m_imageSize.y},
-                       {0, 0, m_windowSize.x, m_windowSize.y}, {0, 0}, 0, WHITE);
-    } else {
-
-        // Camera3D rlCamera{
-        //     .position = camera.m_camera.position,
-        //     .target = Vector3Add(camera.m_camera.position, camera.m_direction),
-        //     .up = {0, 1, 0},
-        //     .fovy = camera.m_fov,
-        //     .projection = CAMERA_PERSPECTIVE,
-        // };
-
-        // BeginMode3D(rlCamera);
-
-        // for (const rt::Sphere& sph : scene.spheres) {
-        //     Color col = ColorFromNormalized({
-        //         scene.materials[sph.materialIndex].albedo.x,
-        //         scene.materials[sph.materialIndex].albedo.y,
-        //         scene.materials[sph.materialIndex].albedo.z,
-        //         1.0,
-        //     });
-        //     DrawSphere(sph.position, sph.radius, col);
-        // }
-
-        // for (const rt::Triangle& tri : scene.triangles) {
-        //     Color col = ColorFromNormalized({
-        //         scene.materials[tri.materialIndex].albedo.x,
-        //         scene.materials[tri.materialIndex].albedo.y,
-        //         scene.materials[tri.materialIndex].albedo.z,
-        //         1.0,
-        //     });
-        //     DrawTriangle3D(tri.v0, tri.v1, tri.v2, col);
-        //     DrawTriangle3D(tri.v0, tri.v2, tri.v1, col);
-        // }
-
-        // EndMode3D();
+    if (forceCameraUpdate || m_camera != &camera) {
+        m_camera = &camera;
+        updateCurrentCamera();
     }
+    if (m_scene != &scene) {
+        m_scene = &scene;
+        updateCurrentScene();
+    }
+    if (m_config != &config) {
+        m_config = &config;
+        updateCurrentConfig();
+    }
+
+    runComputeShader();
+
+    DrawTexturePro(m_outImage, {0, 0, m_imageSize.x, m_imageSize.y},
+                   {0, 0, m_windowSize.x, m_windowSize.y}, {0, 0}, 0, WHITE);
 
     DrawFPS(10, 10);
     DrawText(TextFormat("Frame Time: %.5f", GetFrameTime()), 10, 30, 20, DARKBLUE);
     DrawText(TextFormat("Frame Index: %d", m_frameIndex), 10, 50, 20, DARKBLUE);
-    DrawText(TextFormat("Config: {numSamples: %d, bounceLimit: %d}", (int)config.numSamples,
-                        (int)config.bounceLimit),
-             10, 70, 20, DARKBLUE);
+
+    const char* configDetails = TextFormat("Config: {samples: %d, bounces: %d}",
+                                           (int)config.numSamples, (int)config.bounceLimit);
+    DrawText(configDetails, 10, 70, 20, DARKBLUE);
+
     EndDrawing();
 }
 
@@ -157,11 +123,8 @@ void Renderer::updateCurrentScene() {
     rlSetUniformSampler(uniLoc_materialTexture, scene.materials->getTextureId());
 
     const int uniLoc_numMaterials = getUniformLoc("numMaterials");
-    int numMaterials = scene.materials->getMaterialCount();
-    rlSetUniform(uniLoc_numMaterials, &numMaterials, RL_SHADER_UNIFORM_INT, 1);
-
-    // const int materialBufferSize = sizeof(rt::Material) * scene.materials.size();
-    // rlUpdateShaderBuffer(m_sceneMaterialsBuffer, scene.materials.data(), materialBufferSize, 0);
+    float numMaterials = scene.materials->getMaterialCount();
+    rlSetUniform(uniLoc_numMaterials, &numMaterials, RL_SHADER_UNIFORM_FLOAT, 1);
 
     setScene_spheres(scene);
     setScene_triangles(scene);
@@ -258,7 +221,7 @@ void Renderer::setScene_spheres(const rt::Scene& scene) {
             rlSetUniform(uniLoc_position, &obj.position, RL_SHADER_UNIFORM_VEC3, 1);
             rlSetUniform(uniLoc_radius, &obj.radius, RL_SHADER_UNIFORM_FLOAT, 1);
             // 4 -> 16 bytes
-            rlSetUniform(uniLoc_materialIndex, &obj.materialIndex, RL_SHADER_UNIFORM_INT, 1);
+            rlSetUniform(uniLoc_materialIndex, &obj.materialIndex, RL_SHADER_UNIFORM_FLOAT, 1);
         }
 
     } else {
@@ -303,7 +266,7 @@ void Renderer::setScene_triangles(const rt::Scene& scene) {
             rlSetUniform(uniLoc_uv1, &obj.uv1, RL_SHADER_UNIFORM_VEC2, 1);
             // 16 bytes
             rlSetUniform(uniLoc_uv2, &obj.uv2, RL_SHADER_UNIFORM_VEC2, 1);
-            rlSetUniform(uniLoc_materialIndex, &obj.materialIndex, RL_SHADER_UNIFORM_INT, 1);
+            rlSetUniform(uniLoc_materialIndex, &obj.materialIndex, RL_SHADER_UNIFORM_FLOAT, 1);
         }
 
     } else {
