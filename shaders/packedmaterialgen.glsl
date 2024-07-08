@@ -65,7 +65,7 @@ void main() {
     }
 
     if (useTextures.y == 1.0) {
-        color.a = texture(uTextureA, uv).a;
+        color.a = texture(uTextureA, uv).r;
     } else {
         color.a = randomNormalFloat(seed, mean.a, deviation.y);
     }
