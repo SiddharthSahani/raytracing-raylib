@@ -25,34 +25,29 @@ class Renderer {
 public:
     Renderer(Vector2 windowSize, Vector2 imageSize);
     ~Renderer();
-    void render(const SceneCamera& camera, const rt::CompiledScene& scene, const rt::Config& config,
-                bool forceCameraUpdate = false);
+    void render(bool compute = true, bool draw = true);
     void compileComputeShader(CompileShaderParams params);
     void resetImage();
 
-    bool canRender() const;
-    unsigned getComputeShaderId() const { return m_computeShaderProgram; }
+    void setCamera(const SceneCamera& camera) const;
+    void setScene(const rt::CompiledScene& scene) const;
+    void setConfig(const rt::Config& config) const;
 
+    unsigned getComputeShaderId() const { return m_computeShaderProgram; }
 
 private:
     template <class... Args> int getUniformLoc(const char* fmt, Args... args) const;
     void runComputeShader();
+    void drawOutImage() const;
     void makeOutImage();
     void makeBufferObjects();
-    void updateCurrentCamera();
-    void updateCurrentScene();
-    void updateCurrentConfig();
-    void setScene_spheres(const rt::CompiledScene& scene);
-    void setScene_triangles(const rt::CompiledScene& scene);
+    void setScene_spheres(const rt::CompiledScene& scene) const;
+    void setScene_triangles(const rt::CompiledScene& scene) const;
 
 private:
     Vector2 m_windowSize;
     Vector2 m_imageSize;
     Texture m_outImage;
-
-    const SceneCamera* m_camera = nullptr;
-    const rt::CompiledScene* m_scene = nullptr;
-    const rt::Config* m_config = nullptr;
 
     int m_frameIndex = 0;
     unsigned m_computeShaderProgram = 0;

@@ -11,9 +11,9 @@ rt::CompiledScene createRandomScene(int numSpheres, int numMats) {
     std::vector<std::shared_ptr<rt::Material>> materials;
     for (int i = 0; i < numMats; i++) {
         Vector4 col = ColorNormalize({
-            .r = (uint8_t) GetRandomValue(0, 255),
-            .g = (uint8_t) GetRandomValue(0, 255),
-            .b = (uint8_t) GetRandomValue(0, 255),
+            .r = (uint8_t)GetRandomValue(0, 255),
+            .g = (uint8_t)GetRandomValue(0, 255),
+            .b = (uint8_t)GetRandomValue(0, 255),
             .a = 255,
         });
         float roughness = GetRandomValue(0, 5) / 10.0;
@@ -31,7 +31,7 @@ rt::CompiledScene createRandomScene(int numSpheres, int numMats) {
             GetRandomValue(-40000, 40000) / 10000.0f,
         };
         float rad = GetRandomValue(5000, 10000) / 10000.0f;
-        auto mat = materials[GetRandomValue(0, numMats-1)];
+        auto mat = materials[GetRandomValue(0, numMats - 1)];
 
         rt::Sphere sph = {
             .position = pos,
@@ -203,14 +203,11 @@ int main() {
     unsigned configIdx = 2;
     bool benchmarkMode = false;
 
+    renderer.setCamera(camera);
+    renderer.setScene(scenes[sceneIdx]);
+    renderer.setConfig(configs[configIdx]);
+
     while (!WindowShouldClose()) {
-        bool cameraUpdated = false;
-
-        if (camera.update(GetFrameTime())) {
-            renderer.resetImage();
-            cameraUpdated = true;
-        }
-
         if (IsKeyPressed(KEY_B)) {
             benchmarkMode = !benchmarkMode;
             if (benchmarkMode) {
@@ -220,13 +217,22 @@ int main() {
             }
         }
 
-        changeIndex(configIdx, KEY_C);
-        if (changeIndex(sceneIdx, KEY_S)) {
+        if (camera.update(GetFrameTime())) {
+            renderer.setCamera(camera);
             renderer.resetImage();
         }
 
-        const rt::CompiledScene& scene = scenes[sceneIdx % numScenes];
-        const rt::Config& config = configs[configIdx % numConfigs];
-        renderer.render(camera, scene, config, cameraUpdated);
+        if (changeIndex(sceneIdx, KEY_S)) {
+            const rt::CompiledScene& scene = scenes[sceneIdx % numScenes];
+            renderer.setScene(scene);
+            renderer.resetImage();
+        }
+
+        if (changeIndex(configIdx, KEY_C)) {
+            const rt::Config& config = configs[configIdx % numConfigs];
+            renderer.setConfig(config);
+        }
+
+        renderer.render();
     }
 }

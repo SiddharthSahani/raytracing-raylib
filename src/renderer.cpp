@@ -19,39 +19,13 @@ Renderer::~Renderer() {
 }
 
 
-void Renderer::render(const SceneCamera& camera, const rt::CompiledScene& scene,
-                      const rt::Config& config, bool forceCameraUpdate) {
-
-    BeginDrawing();
-    ClearBackground(GREEN);
-
-    if (forceCameraUpdate || m_camera != &camera) {
-        m_camera = &camera;
-        updateCurrentCamera();
+void Renderer::render(bool compute, bool draw) {
+    if (compute) {
+        runComputeShader();
     }
-    if (m_scene != &scene) {
-        m_scene = &scene;
-        updateCurrentScene();
+    if (draw) {
+        drawOutImage();
     }
-    if (m_config != &config) {
-        m_config = &config;
-        updateCurrentConfig();
-    }
-
-    runComputeShader();
-
-    DrawTexturePro(m_outImage, {0, 0, m_imageSize.x, m_imageSize.y},
-                   {0, 0, m_windowSize.x, m_windowSize.y}, {0, 0}, 0, WHITE);
-
-    DrawFPS(10, 10);
-    DrawText(TextFormat("Frame Time: %.5f", GetFrameTime()), 10, 30, 20, DARKBLUE);
-    DrawText(TextFormat("Frame Index: %d", m_frameIndex), 10, 50, 20, DARKBLUE);
-
-    const char* configDetails = TextFormat("Config: {samples: %d, bounces: %d}",
-                                           (int)config.numSamples, (int)config.bounceLimit);
-    DrawText(configDetails, 10, 70, 20, DARKBLUE);
-
-    EndDrawing();
 }
 
 
@@ -94,13 +68,8 @@ void Renderer::resetImage() {
 }
 
 
-bool Renderer::canRender() const {
-    return m_computeShaderProgram && m_camera && m_scene && m_config;
-}
-
-
-void Renderer::updateCurrentCamera() {
-    const rt::Camera& camera = m_camera->get();
+void Renderer::setCamera(const SceneCamera& camera) const {
+    const rt::Camera& iCamera = camera.get();
 
     rlEnableShader(m_computeShaderProgram);
 
@@ -108,15 +77,13 @@ void Renderer::updateCurrentCamera() {
     const int uniLoc_invProjMat = getUniformLoc("camera.invProjMat");
     const int uniLoc_position = getUniformLoc("camera.position");
 
-    rlSetUniformMatrix(uniLoc_invViewMat, camera.invViewMat);
-    rlSetUniformMatrix(uniLoc_invProjMat, camera.invProjMat);
-    rlSetUniform(uniLoc_position, &camera.position, RL_SHADER_UNIFORM_VEC3, 1);
+    rlSetUniformMatrix(uniLoc_invViewMat, iCamera.invViewMat);
+    rlSetUniformMatrix(uniLoc_invProjMat, iCamera.invProjMat);
+    rlSetUniform(uniLoc_position, &iCamera.position, RL_SHADER_UNIFORM_VEC3, 1);
 }
 
 
-void Renderer::updateCurrentScene() {
-    const rt::CompiledScene& scene = *m_scene;
-
+void Renderer::setScene(const rt::CompiledScene& scene) const {
     rlEnableShader(m_computeShaderProgram);
 
     const int uniLoc_materialTexture = getUniformLoc("materialTexture");
@@ -136,9 +103,7 @@ void Renderer::updateCurrentScene() {
 }
 
 
-void Renderer::updateCurrentConfig() {
-    const rt::Config& config = *m_config;
-
+void Renderer::setConfig(const rt::Config& config) const {
     rlEnableShader(m_computeShaderProgram);
 
     const int uniLoc_bounceLimit = getUniformLoc("config.bounceLimit");
@@ -156,10 +121,6 @@ template <class... Args> int Renderer::getUniformLoc(const char* fmt, Args... ar
 
 
 void Renderer::runComputeShader() {
-    if (!canRender()) {
-        return;
-    }
-
     m_frameIndex++;
     static int uniLoc_frameIndex = getUniformLoc("frameIndex");
 
@@ -175,6 +136,21 @@ void Renderer::runComputeShader() {
     rlBindShaderBuffer(m_sceneTrianglesBuffer, 3);
 
     rlComputeShaderDispatch(groupX, groupY, 1);
+}
+
+
+void Renderer::drawOutImage() const {
+    BeginDrawing();
+    ClearBackground(GREEN);
+
+    DrawTexturePro(m_outImage, {0, 0, m_imageSize.x, m_imageSize.y},
+                   {0, 0, m_windowSize.x, m_windowSize.y}, {0, 0}, 0, WHITE);
+
+    DrawFPS(10, 10);
+    DrawText(TextFormat("Frame Time: %.5f", GetFrameTime()), 10, 30, 20, DARKBLUE);
+    DrawText(TextFormat("Frame Index: %d", m_frameIndex), 10, 50, 20, DARKBLUE);
+
+    EndDrawing();
 }
 
 
@@ -200,7 +176,7 @@ void Renderer::makeBufferObjects() {
 }
 
 
-void Renderer::setScene_spheres(const rt::CompiledScene& scene) {
+void Renderer::setScene_spheres(const rt::CompiledScene& scene) const {
     unsigned numSpheres = scene.m_spheres.size();
 
     if (m_compileParams.storageType == SceneStorageType::Uniforms) {
@@ -234,7 +210,7 @@ void Renderer::setScene_spheres(const rt::CompiledScene& scene) {
 }
 
 
-void Renderer::setScene_triangles(const rt::CompiledScene& scene) {
+void Renderer::setScene_triangles(const rt::CompiledScene& scene) const {
     unsigned numTriangles = scene.m_triangles.size();
 
     if (m_compileParams.storageType == SceneStorageType::Uniforms) {
@@ -271,7 +247,8 @@ void Renderer::setScene_triangles(const rt::CompiledScene& scene) {
     } else {
 
         const unsigned triangleBufferSize = sizeof(rt::Triangle) * numTriangles;
-        rlUpdateShaderBuffer(m_sceneTrianglesBuffer, scene.m_triangles.data(), triangleBufferSize, 0);
+        rlUpdateShaderBuffer(m_sceneTrianglesBuffer, scene.m_triangles.data(), triangleBufferSize,
+                             0);
     }
 
     const int uniLoc_numTriangles = getUniformLoc("sceneInfo.numTriangles");
