@@ -105,45 +105,74 @@ rt::CompiledScene createScene_1() {
 }
 
 
-// rt::Scene createScene_2() {
-//     rt::Scene scene;
+rt::CompiledScene createScene_2() {
 
-//     {
-//         rt::Material mat = rt::Material({255, 0, 255, 255}, 0.0, 0.0);
-//         scene.setMaterial(mat);
-//         rt::Sphere sphere = rt::Sphere({0.5, 0.0, 0.0}, 1.0, 0);
-//         scene.addObject(sphere);
-//     }
+    rt::Scene scene;
 
-//     {
-//         rt::Material mat = rt::Material({50, 75, 255, 255}, 0.0, 0.0);
-//         scene.setMaterial(mat);
-//         rt::Sphere sphere = rt::Sphere({0.0, -101.0, 0.0}, 100.0, 1);
-//         scene.addObject(sphere);
-//     }
+    // defining materials
+    auto purpleMat = std::make_shared<rt::Material>();
+    auto blueMat = std::make_shared<rt::Material>();
+    auto emissiveMat = std::make_shared<rt::Material>();
+    auto mirrorMat = std::make_shared<rt::Material>();
 
-//     {
-//         rt::Material mat = rt::Material({205, 128, 50, 255}, 0.0, 100.0);
-//         scene.setMaterial(mat);
-//         rt::Sphere sphere = rt::Sphere({32.0, 4.0, -32.0}, 20.0, 2);
-//         scene.addObject(sphere);
-//     }
+    purpleMat->setAlbedo({.value = {1.0, 0.0, 1.0}, .deviation = 0.1});
 
-//     {
-//         rt::Material mat = rt::Material({205, 205, 205, 255}, 1.0, 0.0);
-//         scene.setMaterial(mat);
-//         rt::Triangle tri = rt::Triangle({0.0, 2.0, -3.0}, {-2.0, 2.0, -2.0}, {0.0, -1.0, -3.0},
-//         3); scene.addObject(tri);
-//     }
+    blueMat->setAlbedo({.value = {0.2, 0.3, 1.0}, .deviation = 0.0});
 
-//     {
-//         rt::Triangle tr = rt::Triangle({-2.0, 2.0, -2.0}, {0.0, -1.0, -3.0}, {-2.0, -1.0, -2.0},
-//         3); scene.addObject(tr);
-//     }
+    emissiveMat->setAlbedo({.value = {0.8, 0.5, 0.2}, .deviation = 0.05});
+    emissiveMat->setAlbedo({.value = {1.0, 0.6, 0.2}, .deviation = 0.01});
 
-//     scene.backgroundColor = {200, 200, 200, 255};
-//     return scene;
-// }
+    mirrorMat->setAlbedo({.value = {0.8, 0.8, 0.8}, .deviation = 0.0});
+    mirrorMat->setRoughness({.value = 0.0, .deviation = 0.0});
+
+    // defining objects
+    {
+        rt::Sphere sphere = {
+            .position = {0.5, 0.0, 0.0},
+            .radius = 1.0,
+            .material = purpleMat,
+        };
+        scene.addObject(sphere);
+    }
+    {
+        rt::Sphere sphere = {
+            .position = {0.0, -31.0, 0.0},
+            .radius = 30.0,
+            .material = blueMat,
+        };
+        scene.addObject(sphere);
+    }
+    {
+        rt::Sphere sphere = {
+            .position = {10.0, 4.0, -25.0},
+            .radius = 15.0,
+            .material = emissiveMat,
+        };
+        scene.addObject(sphere);
+    }
+    {
+        rt::Triangle tr = {
+            .v0 = {0.0, 2.0, -3.0},
+            .v1 = {-2.0, 2.0, -2.0},
+            .v2 = {0.0, -1.0, -3.0},
+            .material = mirrorMat,
+        };
+        scene.addObject(tr);
+    }
+    {
+        rt::Triangle tr = {
+            .v0 = {-2.0, 2.0, -2.0},
+            .v1 = {0.0, -1.0, -3.0},
+            .v2 = {-2.0, -1.0, -2.0},
+            .material = mirrorMat,
+        };
+        scene.addObject(tr);
+    }
+
+    scene.backgroundColor = {200, 200, 200, 255};
+
+    return rt::CompiledScene(scene, {4096, 4096});
+}
 
 
 bool changeIndex(unsigned int& index, KeyboardKey key) {
@@ -185,7 +214,7 @@ int main() {
 
     const rt::CompiledScene scenes[] = {
         createScene_1(),
-        // createScene_2(),
+        createScene_2(),
         createRandomScene(8, 4),
         createRandomScene(16, 4),
     };
