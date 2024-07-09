@@ -24,9 +24,9 @@ CompiledScene::CompiledScene(const Scene& scene, Vector2 packedMatTexSize) {
         auto it = std::find(materials.begin(), materials.end(), mat);
         if (it == materials.end()) {
             materials.push_back(mat);
-            return materials.size() - 1;
+            return (int) (materials.size() - 1);
         }
-        return (int)(it - materials.begin()) / sizeof(Material);
+        return (int) (it - materials.begin());
     };
 
     // converts and sets the mat index of the spheres
