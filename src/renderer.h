@@ -52,6 +52,7 @@ private:
     int m_frameIndex = 0;
     unsigned m_computeShaderProgram = 0;
     CompileShaderParams m_compileParams;
+    bool m_compiled = false;
 
     unsigned m_sceneSpheresBuffer = 0;
     unsigned m_sceneTrianglesBuffer = 0;

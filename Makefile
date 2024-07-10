@@ -1,6 +1,6 @@
 
 CXXFLAGS = -O1
-DEFINES  =
+DEFINES  = -D ENABLE_TRACE_LOGGING
 INCLUDES = -I . -I external/
 LDFLAGS  = -L external/raylib -lraylib -lgdi32 -lwinmm
 

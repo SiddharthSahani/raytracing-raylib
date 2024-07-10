@@ -1,11 +1,14 @@
 
 #include "src/renderer.h"
+#include "src/logger.h"
 #include <raylib/rlgl.h>
 
 
 Renderer::Renderer(Vector2 windowSize, Vector2 imageSize)
     : m_windowSize(windowSize), m_imageSize(imageSize) {
     InitWindow(m_windowSize.x, m_windowSize.y, "Raytracing");
+    INFO("Created window of size = %d x %d", (int)windowSize.x, (int)windowSize.y);
+
     SetTargetFPS(30);
 
     makeOutImage();
@@ -14,8 +17,13 @@ Renderer::Renderer(Vector2 windowSize, Vector2 imageSize)
 
 Renderer::~Renderer() {
     rlUnloadShaderProgram(m_computeShaderProgram);
+    TRACE("Unloaded compute shader program (id: %u)", m_computeShaderProgram);
+
     UnloadTexture(m_outImage);
+    TRACE("Unloaded output texture (id: %u)", m_outImage.id);
+
     CloseWindow();
+    INFO("Closed window");
 }
 
 
@@ -30,11 +38,23 @@ void Renderer::render(bool compute, bool draw) {
 
 
 void Renderer::compileComputeShader(CompileShaderParams _params) {
+    if (m_compiled) {
+        INFO("Cannot compile shader again");
+        return;
+    }
+
+    m_compiled = true;
     m_compileParams = _params;
 
     makeBufferObjects();
 
-    char* fileText = LoadFileText("shaders/raytracer.glsl");
+    const char* filepath = "shaders/raytracer.glsl";
+    char* fileText = LoadFileText(filepath);
+    if (fileText != NULL) {
+        TRACE("File '%s' loaded succesfully", filepath);
+    } else {
+        ERROR("Loading '%s' failed", filepath);
+    }
 
     auto replaceFn = [&](const char* replaceStr, int number) {
         const char* byStr = TextFormat("%d", number);
@@ -53,10 +73,29 @@ void Renderer::compileComputeShader(CompileShaderParams _params) {
         replaceFn("USE_UNIFORM_OBJECTS", 1);
     }
 
+    INFO("Compiling compute shader with");
+    INFO("    Workgroup Size: %u", m_compileParams.workgroupSize);
+    INFO("    Buffer Type: %s",
+         m_compileParams.storageType == SceneStorageType::Uniforms ? "UBO" : "SSBO");
+    INFO("    Max Sphere Count: %u", m_compileParams.maxSphereCount);
+    INFO("    Max Triangle Count: %u", m_compileParams.maxTriangleCount);
+
     const unsigned shaderId = rlCompileShader(fileText, RL_COMPUTE_SHADER);
+    if (shaderId != 0) {
+        TRACE("Compiled compute shader successfully (id: %d)", shaderId);
+    } else {
+        ERROR("Failed to compile compute shader");
+    }
+
     m_computeShaderProgram = rlLoadComputeShaderProgram(shaderId);
+    if (m_computeShaderProgram != 0) {
+        TRACE("Loaded compute shader program (id: %d)", m_computeShaderProgram);
+    } else {
+        ERROR("Failed to load compute shader program");
+    }
 
     UnloadFileText(fileText);
+    TRACE("Unloaded file '%s'", filepath);
 }
 
 
@@ -84,33 +123,45 @@ void Renderer::setCamera(const SceneCamera& camera) const {
 
 
 void Renderer::setScene(const rt::CompiledScene& scene) const {
+    INFO("Loading scene: %s", scene.getSceneName().c_str());
     rlEnableShader(m_computeShaderProgram);
-
-    const int uniLoc_materialTexture = getUniformLoc("materialTexture");
-    rlSetUniformSampler(uniLoc_materialTexture, scene.m_materialData->getTextureId());
 
     const int uniLoc_numMaterials = getUniformLoc("numMaterials");
     float numMaterials = scene.m_materialData->getMaterialCount();
     rlSetUniform(uniLoc_numMaterials, &numMaterials, RL_SHADER_UNIFORM_FLOAT, 1);
+    TRACE("Compute shader uniform float set [index = %d | numMaterials = %d]", uniLoc_numMaterials,
+          scene.m_materialData->getMaterialCount());
+
+    const int uniLoc_materialTexture = getUniformLoc("materialTexture");
+    rlSetUniformSampler(uniLoc_materialTexture, scene.m_materialData->getTextureId());
+    TRACE("Compute shader uniform sampler set [index = %d | materialTexture = %d]",
+          uniLoc_materialTexture, scene.m_materialData->getTextureId());
 
     setScene_spheres(scene);
     setScene_triangles(scene);
 
     const int uniLoc_backgroundColor = getUniformLoc("sceneInfo.backgroundColor");
-    const int uniLoc_numSpheres = getUniformLoc("sceneInfo.numSpheres");
-
     rlSetUniform(uniLoc_backgroundColor, &scene.m_backgroundColor, RL_SHADER_UNIFORM_VEC3, 1);
+    TRACE("Compute shader uniform vec3 set [index = %d | scene.backgroundColor = (%f %f %f)]",
+          uniLoc_backgroundColor, scene.m_backgroundColor.x, scene.m_backgroundColor.y,
+          scene.m_backgroundColor.z);
 }
 
 
 void Renderer::setConfig(const rt::Config& config) const {
+    INFO("Setting configuration: {numSamples: %d, bounceLimit: %d}", (int)config.numSamples,
+         (int)config.bounceLimit);
     rlEnableShader(m_computeShaderProgram);
 
-    const int uniLoc_bounceLimit = getUniformLoc("config.bounceLimit");
     const int uniLoc_numSamples = getUniformLoc("config.numSamples");
-
-    rlSetUniform(uniLoc_bounceLimit, &config.bounceLimit, RL_SHADER_UNIFORM_FLOAT, 1);
     rlSetUniform(uniLoc_numSamples, &config.numSamples, RL_SHADER_UNIFORM_FLOAT, 1);
+    TRACE("Compute shader uniform float set [index = %d | config.numSamples = %d]",
+          uniLoc_numSamples, (int)config.numSamples);
+
+    const int uniLoc_bounceLimit = getUniformLoc("config.bounceLimit");
+    rlSetUniform(uniLoc_bounceLimit, &config.bounceLimit, RL_SHADER_UNIFORM_FLOAT, 1);
+    TRACE("Compute shader uniform float set [index = %d | config.bounceLimit = %d]",
+          uniLoc_bounceLimit, (int)config.bounceLimit);
 }
 
 
@@ -158,17 +209,42 @@ void Renderer::makeOutImage() {
     ImageFormat(&image, PIXELFORMAT_UNCOMPRESSED_R16G16B16A16);
     m_outImage = LoadTextureFromImage(image);
     UnloadImage(image);
+
+    if (m_outImage.id != 0) {
+        INFO("Created output texture of size = %d x %d (id: %u)", (int)m_imageSize.x,
+             (int)m_imageSize.y, m_outImage.id);
+    } else {
+        ERROR("Failed to created output texture of size = %d x %d", (int)m_imageSize.x,
+              (int)m_imageSize.y);
+    }
 }
 
 
 void Renderer::makeBufferObjects() {
-    const int totalObjects = m_compileParams.maxSphereCount + m_compileParams.maxTriangleCount;
+    if (m_compileParams.storageType != SceneStorageType::Buffers) {
+        return;
+    }
 
-    if (m_compileParams.storageType == SceneStorageType::Buffers) {
-        m_sceneSpheresBuffer = rlLoadShaderBuffer(
-            sizeof(rt::Sphere) * m_compileParams.maxSphereCount, nullptr, RL_DYNAMIC_COPY);
-        m_sceneTrianglesBuffer = rlLoadShaderBuffer(
-            sizeof(rt::Triangle) * m_compileParams.maxTriangleCount, nullptr, RL_DYNAMIC_COPY);
+    m_sceneSpheresBuffer = rlLoadShaderBuffer(sizeof(rt::Sphere) * m_compileParams.maxSphereCount,
+                                              nullptr, RL_DYNAMIC_COPY);
+    m_sceneTrianglesBuffer = rlLoadShaderBuffer(
+        sizeof(rt::Triangle) * m_compileParams.maxTriangleCount, nullptr, RL_DYNAMIC_COPY);
+
+    if (m_sceneSpheresBuffer != 0) {
+        TRACE("Created buffer for scene-spheres (ssbo-id: %u)", m_sceneSpheresBuffer);
+    } else {
+        ERROR("Failed to create buffer for scene-spheres");
+    }
+
+    if (m_sceneTrianglesBuffer != 0) {
+        TRACE("Created buffer for scene-triangles (ssbo-id: %u)", m_sceneTrianglesBuffer);
+    } else {
+        ERROR("Failed to create buffer for scene-triangles");
+    }
+
+    if (m_sceneSpheresBuffer == 0 && m_sceneTrianglesBuffer == 0) {
+        INFO("Created buffers for scene's spheres and triangls (ssbos: %u %u)",
+             m_sceneSpheresBuffer, m_sceneTrianglesBuffer);
     }
 }
 
@@ -178,6 +254,8 @@ void Renderer::setScene_spheres(const rt::CompiledScene& scene) const {
 
     if (m_compileParams.storageType == SceneStorageType::Uniforms) {
         numSpheres = std::min(numSpheres, m_compileParams.maxSphereCount);
+
+        TRACE("Setting scene-spheres uniform");
 
         for (int i = 0; i < numSpheres; i++) {
             const rt::internal::Sphere& obj = scene.m_spheres[i];
@@ -194,16 +272,27 @@ void Renderer::setScene_spheres(const rt::CompiledScene& scene) const {
             rlSetUniform(uniLoc_radius, &obj.radius, RL_SHADER_UNIFORM_FLOAT, 1);
             // 4 -> 16 bytes
             rlSetUniform(uniLoc_materialIndex, &obj.materialIndex, RL_SHADER_UNIFORM_FLOAT, 1);
+
+            TRACE("    Sphere[%d] uniform vec3 set [index = %d | position = (%f %f %f)]", i,
+                  uniLoc_position, obj.position.x, obj.position.y, obj.position.z);
+            TRACE("    Sphere[%d] uniform float set [index = %d | radius = %f]", i, uniLoc_radius,
+                  obj.radius);
+            TRACE("    Sphere[%d] uniform float set [index = %d | materialIndex = %d]", i,
+                  uniLoc_materialIndex, (int)obj.materialIndex);
         }
 
     } else {
-
         const unsigned sphereBufferSize = sizeof(rt::Sphere) * numSpheres;
+
+        TRACE("Setting scene-spheres buffer of size = %u bytes", sphereBufferSize);
         rlUpdateShaderBuffer(m_sceneSpheresBuffer, scene.m_spheres.data(), sphereBufferSize, 0);
     }
 
     const int uniLoc_numSpheres = getUniformLoc("sceneInfo.numSpheres");
     rlSetUniform(uniLoc_numSpheres, &numSpheres, RL_SHADER_UNIFORM_INT, 1);
+
+    TRACE("Compute shader uniform float set [index = %d | numSpheres =  %u]", uniLoc_numSpheres,
+          numSpheres);
 }
 
 
@@ -212,6 +301,8 @@ void Renderer::setScene_triangles(const rt::CompiledScene& scene) const {
 
     if (m_compileParams.storageType == SceneStorageType::Uniforms) {
         numTriangles = std::min(numTriangles, m_compileParams.maxTriangleCount);
+
+        TRACE("Setting scene-triangles uniform");
 
         for (int i = 0; i < numTriangles; i++) {
             const rt::internal::Triangle& obj = scene.m_triangles[i];
@@ -239,15 +330,35 @@ void Renderer::setScene_triangles(const rt::CompiledScene& scene) const {
             // 16 bytes
             rlSetUniform(uniLoc_uv2, &obj.uv2, RL_SHADER_UNIFORM_VEC2, 1);
             rlSetUniform(uniLoc_materialIndex, &obj.materialIndex, RL_SHADER_UNIFORM_FLOAT, 1);
+
+            TRACE("    Triangle[%d] uniform vec3 set [index = %d | v0 = (%f %f %f)]", i, uniLoc_v0,
+                  obj.v0.x, obj.v0.y, obj.v0.z);
+            TRACE("    Triangle[%d] uniform vec3 set [index = %d | v1 = (%f %f %f)]", i, uniLoc_v1,
+                  obj.v1.x, obj.v1.y, obj.v1.z);
+            TRACE("    Triangle[%d] uniform vec3 set [index = %d | v2 = (%f %f %f)]", i, uniLoc_v0,
+                  obj.v2.x, obj.v2.y, obj.v2.z);
+            TRACE("    Triangle[%d] uniform vec2 set [index = %d | uv0 = (%f %f)]", i, uniLoc_uv0,
+                  obj.uv0.x, obj.uv0.y);
+            TRACE("    Triangle[%d] uniform vec2 set [index = %d | uv1 = (%f %f)]", i, uniLoc_uv1,
+                  obj.uv1.x, obj.uv1.y);
+            TRACE("    Triangle[%d] uniform vec2 set [index = %d | uv2 = (%f %f)]", i, uniLoc_uv2,
+                  obj.uv2.x, obj.uv2.y);
+            TRACE("    Triangle[%d] uniform float set [index = %d | materialIndex = %d]", i,
+                  uniLoc_materialIndex, (int)obj.materialIndex);
         }
 
     } else {
 
         const unsigned triangleBufferSize = sizeof(rt::Triangle) * numTriangles;
+        TRACE("Setting scene-triangles buffer of size = %u bytes", triangleBufferSize);
+
         rlUpdateShaderBuffer(m_sceneTrianglesBuffer, scene.m_triangles.data(), triangleBufferSize,
                              0);
     }
 
     const int uniLoc_numTriangles = getUniformLoc("sceneInfo.numTriangles");
     rlSetUniform(uniLoc_numTriangles, &numTriangles, RL_SHADER_UNIFORM_INT, 1);
+
+    TRACE("Compute shader uniform float set [index = %d | numTriangles =  %u]", uniLoc_numTriangles,
+          numTriangles);
 }

@@ -184,6 +184,7 @@ bool changeIndex(unsigned int& index, KeyboardKey key) {
 
 
 int main() {
+    SetTraceLogLevel(LOG_NONE);
     const int windowWidth = 1280;
     const int windowHeight = 720;
     const float scale = 2.0;
