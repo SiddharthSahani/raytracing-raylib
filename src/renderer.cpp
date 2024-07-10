@@ -131,7 +131,6 @@ void Renderer::runComputeShader() {
 
     rlSetUniform(uniLoc_frameIndex, &m_frameIndex, RL_SHADER_UNIFORM_INT, 1);
     rlBindImageTexture(m_outImage.id, 0, m_outImage.format, false);
-    rlBindShaderBuffer(m_sceneMaterialsBuffer, 1);
     rlBindShaderBuffer(m_sceneSpheresBuffer, 2);
     rlBindShaderBuffer(m_sceneTrianglesBuffer, 3);
 
@@ -164,8 +163,6 @@ void Renderer::makeOutImage() {
 
 void Renderer::makeBufferObjects() {
     const int totalObjects = m_compileParams.maxSphereCount + m_compileParams.maxTriangleCount;
-    m_sceneMaterialsBuffer =
-        rlLoadShaderBuffer(sizeof(rt::Material) * totalObjects, nullptr, RL_DYNAMIC_COPY);
 
     if (m_compileParams.storageType == SceneStorageType::Buffers) {
         m_sceneSpheresBuffer = rlLoadShaderBuffer(

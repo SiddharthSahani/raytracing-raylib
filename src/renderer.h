@@ -53,7 +53,6 @@ private:
     unsigned m_computeShaderProgram = 0;
     CompileShaderParams m_compileParams;
 
-    unsigned m_sceneMaterialsBuffer = 0;
     unsigned m_sceneSpheresBuffer = 0;
     unsigned m_sceneTrianglesBuffer = 0;
 };
