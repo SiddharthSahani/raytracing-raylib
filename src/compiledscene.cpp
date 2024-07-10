@@ -6,7 +6,9 @@
 namespace rt {
 
 
-CompiledScene::CompiledScene(const Scene& scene, Vector2 packedMatTexSize) {
+CompiledScene::CompiledScene(const std::string& sceneName, const Scene& scene,
+                             Vector2 packedMatTexSize)
+    : m_sceneName(sceneName) {
 
     // normalizing background color
     m_backgroundColor = {
@@ -24,9 +26,9 @@ CompiledScene::CompiledScene(const Scene& scene, Vector2 packedMatTexSize) {
         auto it = std::find(materials.begin(), materials.end(), mat);
         if (it == materials.end()) {
             materials.push_back(mat);
-            return (int) (materials.size() - 1);
+            return (int)(materials.size() - 1);
         }
-        return (int) (it - materials.begin());
+        return (int)(it - materials.begin());
     };
 
     // converts and sets the mat index of the spheres
@@ -51,9 +53,7 @@ CompiledScene::CompiledScene(const Scene& scene, Vector2 packedMatTexSize) {
 }
 
 
-CompiledScene::~CompiledScene() {
-    delete m_materialData;
-}
+CompiledScene::~CompiledScene() { delete m_materialData; }
 
 
 } // namespace rt

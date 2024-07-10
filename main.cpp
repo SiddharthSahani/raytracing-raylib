@@ -43,7 +43,7 @@ rt::CompiledScene createRandomScene(int numSpheres, int numMats) {
 
     scene.backgroundColor = {210, 210, 240, 255};
 
-    return rt::CompiledScene(scene, {2048, 2048});
+    return rt::CompiledScene("scene-3", scene, {2048, 2048});
 }
 
 
@@ -101,7 +101,7 @@ rt::CompiledScene createScene_1() {
 
     scene.backgroundColor = {200, 200, 200, 255};
 
-    return rt::CompiledScene(scene, {4096, 4096});
+    return rt::CompiledScene("scene-1", scene, {4096, 4096});
 }
 
 
@@ -171,7 +171,7 @@ rt::CompiledScene createScene_2() {
 
     scene.backgroundColor = {200, 200, 200, 255};
 
-    return rt::CompiledScene(scene, {4096, 4096});
+    return rt::CompiledScene("scene-2", scene, {4096, 4096});
 }
 
 
