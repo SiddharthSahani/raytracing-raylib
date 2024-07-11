@@ -1,38 +1,26 @@
 
 #pragma once
 
-#include <stdio.h>
+
+#define TRACE(format, ...) logger::trace("LOG [ TRACE ]: " format "\n", ##__VA_ARGS__)
+#define INFO(format, ...) logger::info("LOG [ INFO  ]: " format "\n", ##__VA_ARGS__)
+#define ERROR(format, ...) logger::error("LOG [ ERROR ]: " format "\n", ##__VA_ARGS__)
 
 
-// trace logging also enables info logging
-#if defined(ENABLE_TRACE_LOGGING) && !defined(ENABLE_INFO_LOGGING)
-#define ENABLE_INFO_LOGGING
-#endif
+namespace logger {
 
 
-// info logging also enables error logging
-#if defined(ENABLE_INFO_LOGGING) && !defined(ENABLE_ERROR_LOGGING)
-#define ENABLE_ERROR_LOGGING
-#endif
+enum class LogLevel {
+    TRACE = 0,
+    INFO,
+    ERROR,
+};
 
 
-#ifdef ENABLE_TRACE_LOGGING
-#define TRACE(format, ...) printf("LOG[ TRACE ]: " format "\n", ##__VA_ARGS__)
-#else
-#define TRACE(...)
-#endif
+void setLogLevel(LogLevel level);
+void trace(const char* format, ...);
+void info(const char* format, ...);
+void error(const char* format, ...);
 
 
-#ifdef ENABLE_INFO_LOGGING
-#define INFO(format, ...) printf("LOG[ INFO  ]: " format "\n", ##__VA_ARGS__)
-#else
-#define INFO(...)
-#endif
-
-
-#ifdef ENABLE_ERROR_LOGGING
-#define ERROR(format, ...) printf("LOG[ ERROR ]: " format "\n", ##__VA_ARGS__)
-#else
-#define ERROR(...)
-#endif
-
+} // namespace logger

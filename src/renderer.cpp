@@ -6,6 +6,9 @@
 
 Renderer::Renderer(Vector2 windowSize, Vector2 imageSize)
     : m_windowSize(windowSize), m_imageSize(imageSize) {
+
+    SetTraceLogLevel(LOG_NONE);
+
     InitWindow(m_windowSize.x, m_windowSize.y, "Raytracing");
     INFO("Created window of size = %d x %d", (int)windowSize.x, (int)windowSize.y);
 

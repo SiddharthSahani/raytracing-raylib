@@ -1,6 +1,7 @@
 
 #include "src/camera.h"
 #include "src/renderer.h"
+#include "src/logger.h"
 
 
 rt::CompiledScene createRandomScene(int numSpheres, int numMats) {
@@ -184,7 +185,7 @@ bool changeIndex(unsigned int& index, KeyboardKey key) {
 
 
 int main() {
-    SetTraceLogLevel(LOG_NONE);
+    logger::setLogLevel(logger::LogLevel::TRACE);
     const int windowWidth = 1280;
     const int windowHeight = 720;
     const float scale = 2.0;
