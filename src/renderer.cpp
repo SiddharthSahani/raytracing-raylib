@@ -126,26 +126,26 @@ void Renderer::setCamera(const SceneCamera& camera) const {
 
 
 void Renderer::setScene(const rt::CompiledScene& scene) const {
-    INFO("Loading scene: %s", scene.getSceneName().c_str());
+    INFO("Setting scene: '%s'", scene.getSceneName().c_str());
     rlEnableShader(m_computeShaderProgram);
 
     const int uniLoc_numMaterials = getUniformLoc("numMaterials");
     float numMaterials = scene.m_materialData->getMaterialCount();
     rlSetUniform(uniLoc_numMaterials, &numMaterials, RL_SHADER_UNIFORM_FLOAT, 1);
-    TRACE("Compute shader uniform float set [index = %d | numMaterials = %d]", uniLoc_numMaterials,
+    TRACE("    Uniform float set [index = %d | numMaterials = %d]", uniLoc_numMaterials,
           scene.m_materialData->getMaterialCount());
 
     const int uniLoc_materialTexture = getUniformLoc("materialTexture");
     rlSetUniformSampler(uniLoc_materialTexture, scene.m_materialData->getTextureId());
-    TRACE("Compute shader uniform sampler set [index = %d | materialTexture = %d]",
-          uniLoc_materialTexture, scene.m_materialData->getTextureId());
+    TRACE("    Uniform sampler set [index = %d | materialTextureId = %d]", uniLoc_materialTexture,
+          scene.m_materialData->getTextureId());
 
     setScene_spheres(scene);
     setScene_triangles(scene);
 
     const int uniLoc_backgroundColor = getUniformLoc("sceneInfo.backgroundColor");
     rlSetUniform(uniLoc_backgroundColor, &scene.m_backgroundColor, RL_SHADER_UNIFORM_VEC3, 1);
-    TRACE("Compute shader uniform vec3 set [index = %d | scene.backgroundColor = (%f %f %f)]",
+    TRACE("    Uniform vec3 set [index = %d | scene.backgroundColor = (%f %f %f)]",
           uniLoc_backgroundColor, scene.m_backgroundColor.x, scene.m_backgroundColor.y,
           scene.m_backgroundColor.z);
 }
@@ -158,13 +158,13 @@ void Renderer::setConfig(const rt::Config& config) const {
 
     const int uniLoc_numSamples = getUniformLoc("config.numSamples");
     rlSetUniform(uniLoc_numSamples, &config.numSamples, RL_SHADER_UNIFORM_FLOAT, 1);
-    TRACE("Compute shader uniform float set [index = %d | config.numSamples = %d]",
-          uniLoc_numSamples, (int)config.numSamples);
+    TRACE("    Uniform float set [index = %d | config.numSamples = %d]", uniLoc_numSamples,
+          (int)config.numSamples);
 
     const int uniLoc_bounceLimit = getUniformLoc("config.bounceLimit");
     rlSetUniform(uniLoc_bounceLimit, &config.bounceLimit, RL_SHADER_UNIFORM_FLOAT, 1);
-    TRACE("Compute shader uniform float set [index = %d | config.bounceLimit = %d]",
-          uniLoc_bounceLimit, (int)config.bounceLimit);
+    TRACE("    Uniform float set [index = %d | config.bounceLimit = %d]", uniLoc_bounceLimit,
+          (int)config.bounceLimit);
 }
 
 
@@ -258,7 +258,7 @@ void Renderer::setScene_spheres(const rt::CompiledScene& scene) const {
     if (m_compileParams.storageType == SceneStorageType::Uniforms) {
         numSpheres = std::min(numSpheres, m_compileParams.maxSphereCount);
 
-        TRACE("Setting scene-spheres uniform");
+        TRACE("    Setting scene-spheres uniform");
 
         for (int i = 0; i < numSpheres; i++) {
             const rt::internal::Sphere& obj = scene.m_spheres[i];
@@ -275,27 +275,19 @@ void Renderer::setScene_spheres(const rt::CompiledScene& scene) const {
             rlSetUniform(uniLoc_radius, &obj.radius, RL_SHADER_UNIFORM_FLOAT, 1);
             // 4 -> 16 bytes
             rlSetUniform(uniLoc_materialIndex, &obj.materialIndex, RL_SHADER_UNIFORM_FLOAT, 1);
-
-            TRACE("    Sphere[%d] uniform vec3 set [index = %d | position = (%f %f %f)]", i,
-                  uniLoc_position, obj.position.x, obj.position.y, obj.position.z);
-            TRACE("    Sphere[%d] uniform float set [index = %d | radius = %f]", i, uniLoc_radius,
-                  obj.radius);
-            TRACE("    Sphere[%d] uniform float set [index = %d | materialIndex = %d]", i,
-                  uniLoc_materialIndex, (int)obj.materialIndex);
         }
 
     } else {
         const unsigned sphereBufferSize = sizeof(rt::Sphere) * numSpheres;
 
-        TRACE("Setting scene-spheres buffer of size = %u bytes", sphereBufferSize);
+        TRACE("    Setting scene-spheres buffer of size = %u bytes", sphereBufferSize);
         rlUpdateShaderBuffer(m_sceneSpheresBuffer, scene.m_spheres.data(), sphereBufferSize, 0);
     }
 
     const int uniLoc_numSpheres = getUniformLoc("sceneInfo.numSpheres");
     rlSetUniform(uniLoc_numSpheres, &numSpheres, RL_SHADER_UNIFORM_INT, 1);
 
-    TRACE("Compute shader uniform float set [index = %d | numSpheres =  %u]", uniLoc_numSpheres,
-          numSpheres);
+    TRACE("    Uniform float set [index = %d | numSpheres =  %u]", uniLoc_numSpheres, numSpheres);
 }
 
 
@@ -305,7 +297,7 @@ void Renderer::setScene_triangles(const rt::CompiledScene& scene) const {
     if (m_compileParams.storageType == SceneStorageType::Uniforms) {
         numTriangles = std::min(numTriangles, m_compileParams.maxTriangleCount);
 
-        TRACE("Setting scene-triangles uniform");
+        TRACE("    Setting scene-triangles uniform");
 
         for (int i = 0; i < numTriangles; i++) {
             const rt::internal::Triangle& obj = scene.m_triangles[i];
@@ -333,27 +325,12 @@ void Renderer::setScene_triangles(const rt::CompiledScene& scene) const {
             // 16 bytes
             rlSetUniform(uniLoc_uv2, &obj.uv2, RL_SHADER_UNIFORM_VEC2, 1);
             rlSetUniform(uniLoc_materialIndex, &obj.materialIndex, RL_SHADER_UNIFORM_FLOAT, 1);
-
-            TRACE("    Triangle[%d] uniform vec3 set [index = %d | v0 = (%f %f %f)]", i, uniLoc_v0,
-                  obj.v0.x, obj.v0.y, obj.v0.z);
-            TRACE("    Triangle[%d] uniform vec3 set [index = %d | v1 = (%f %f %f)]", i, uniLoc_v1,
-                  obj.v1.x, obj.v1.y, obj.v1.z);
-            TRACE("    Triangle[%d] uniform vec3 set [index = %d | v2 = (%f %f %f)]", i, uniLoc_v0,
-                  obj.v2.x, obj.v2.y, obj.v2.z);
-            TRACE("    Triangle[%d] uniform vec2 set [index = %d | uv0 = (%f %f)]", i, uniLoc_uv0,
-                  obj.uv0.x, obj.uv0.y);
-            TRACE("    Triangle[%d] uniform vec2 set [index = %d | uv1 = (%f %f)]", i, uniLoc_uv1,
-                  obj.uv1.x, obj.uv1.y);
-            TRACE("    Triangle[%d] uniform vec2 set [index = %d | uv2 = (%f %f)]", i, uniLoc_uv2,
-                  obj.uv2.x, obj.uv2.y);
-            TRACE("    Triangle[%d] uniform float set [index = %d | materialIndex = %d]", i,
-                  uniLoc_materialIndex, (int)obj.materialIndex);
         }
 
     } else {
 
         const unsigned triangleBufferSize = sizeof(rt::Triangle) * numTriangles;
-        TRACE("Setting scene-triangles buffer of size = %u bytes", triangleBufferSize);
+        TRACE("    Setting scene-triangles buffer of size = %u bytes", triangleBufferSize);
 
         rlUpdateShaderBuffer(m_sceneTrianglesBuffer, scene.m_triangles.data(), triangleBufferSize,
                              0);
@@ -362,6 +339,6 @@ void Renderer::setScene_triangles(const rt::CompiledScene& scene) const {
     const int uniLoc_numTriangles = getUniformLoc("sceneInfo.numTriangles");
     rlSetUniform(uniLoc_numTriangles, &numTriangles, RL_SHADER_UNIFORM_INT, 1);
 
-    TRACE("Compute shader uniform float set [index = %d | numTriangles =  %u]", uniLoc_numTriangles,
+    TRACE("    Uniform float set [index = %d | numTriangles =  %u]", uniLoc_numTriangles,
           numTriangles);
 }
