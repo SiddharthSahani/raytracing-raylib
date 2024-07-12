@@ -1,12 +1,16 @@
 
 #include "src/packedmaterialdata.h"
+#include "src/logger.h"
 
 
 namespace rt {
 
 
-PackedMaterialData::PackedMaterialData(int materialCount, Vector2 textureSize)
-    : m_materialCount(materialCount), m_textureSize(textureSize) {
+PackedMaterialData::PackedMaterialData(const std::string& name, int materialCount,
+                                       Vector2 textureSize)
+    : m_name(name), m_materialCount(materialCount), m_textureSize(textureSize) {
+    INFO("Creating materialData: '%s' with %d materials and of size = %d x %d", name.c_str(),
+         materialCount, (int)m_textureSize.x, (int)m_textureSize.y);
 
     createFrameBuffer();
     createShader();
@@ -14,6 +18,7 @@ PackedMaterialData::PackedMaterialData(int materialCount, Vector2 textureSize)
 
 
 PackedMaterialData::~PackedMaterialData() {
+    TRACE("Unloading '%s' materialData", m_name.c_str());
     UnloadRenderTexture(m_renderTexture);
     UnloadShader(m_shader);
 }
@@ -34,7 +39,13 @@ void PackedMaterialData::setMaterial(int index, const Material& material) {
     static int uTextureA_uniLoc = GetShaderLocation(m_shader, "uTextureA");
 
     SetShaderValue(m_shader, uResolution_uniLoc, &m_textureSize, SHADER_UNIFORM_VEC2);
+    // TRACE("    Uniform vec2 set [index = %d | uResolution = (%f %f)]", uResolution_uniLoc,
+    // m_textureSize.x, m_textureSize.y);
+
     SetShaderValue(m_shader, uGridSize_uniLoc, &uGridSize, SHADER_UNIFORM_VEC2);
+    // TRACE("    Uniform vec2 set [index = %d | uGridSize = (%f %f)]", uGridSize_uniLoc,
+    // uGridSize.x, uGridSize.y);
+
     EndShaderMode();
 
     BeginTextureMode(m_renderTexture);
@@ -51,6 +62,16 @@ void PackedMaterialData::setMaterial(int index, const Material& material) {
         SetShaderValue(m_shader, useTextures_uniLoc, &info.useTextures, SHADER_UNIFORM_VEC2);
         SetShaderValueTexture(m_shader, uTextureRGB_uniLoc, info.textures[0]);
         SetShaderValueTexture(m_shader, uTextureA_uniLoc, info.textures[1]);
+
+        TRACE("    Setting materialIndex = %d with '%s'", index, material.getName().c_str());
+        TRACE("        Uniform vec2 set [index = %d | uCurrent = (%f %f)]", uCurrent_uniLoc,
+              uCurrent.x, uCurrent.y);
+        TRACE("        Uniform vec4 set [index = %d | mean = (%f %f %f %f)]", mean_uniLoc,
+              info.mean.x, info.mean.y, info.mean.z, info.mean.w);
+        TRACE("        Uniform vec2 set [index = %d | deviation = (%f %f)]", deviation_uniLoc,
+              info.deviation.x, info.deviation.y);
+        TRACE("        Uniform vec2 set [index = %d | useTextures = (%f %f)]", useTextures_uniLoc,
+              info.useTextures.x, info.useTextures.y);
 
         DrawRectangle(0, 0, m_textureSize.x, m_textureSize.y, RED);
         EndShaderMode();
@@ -70,6 +91,7 @@ void PackedMaterialData::setMaterial(int index, const Material& material) {
 
 void PackedMaterialData::createFrameBuffer() {
     m_renderTexture = LoadRenderTexture(m_textureSize.x, m_textureSize.y);
+    TRACE("    Created texture for '%s' materialData", m_name.c_str());
 }
 
 

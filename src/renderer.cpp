@@ -55,8 +55,6 @@ void Renderer::compileComputeShader(CompileShaderParams _params) {
     char* fileText = LoadFileText(filepath);
     if (fileText != NULL) {
         TRACE("File '%s' loaded succesfully", filepath);
-    } else {
-        ERROR("Loading '%s' failed", filepath);
     }
 
     auto replaceFn = [&](const char* replaceStr, int number) {
@@ -86,15 +84,11 @@ void Renderer::compileComputeShader(CompileShaderParams _params) {
     const unsigned shaderId = rlCompileShader(fileText, RL_COMPUTE_SHADER);
     if (shaderId != 0) {
         TRACE("Compiled compute shader successfully (id: %d)", shaderId);
-    } else {
-        ERROR("Failed to compile compute shader");
     }
 
     m_computeShaderProgram = rlLoadComputeShaderProgram(shaderId);
     if (m_computeShaderProgram != 0) {
         TRACE("Loaded compute shader program (id: %d)", m_computeShaderProgram);
-    } else {
-        ERROR("Failed to load compute shader program");
     }
 
     UnloadFileText(fileText);
@@ -126,7 +120,7 @@ void Renderer::setCamera(const SceneCamera& camera) const {
 
 
 void Renderer::setScene(const rt::CompiledScene& scene) const {
-    INFO("Setting scene: '%s'", scene.getSceneName().c_str());
+    INFO("Setting scene: '%s'", scene.getname().c_str());
     rlEnableShader(m_computeShaderProgram);
 
     const int uniLoc_numMaterials = getUniformLoc("numMaterials");
@@ -216,9 +210,6 @@ void Renderer::makeOutImage() {
     if (m_outImage.id != 0) {
         INFO("Created output texture of size = %d x %d (id: %u)", (int)m_imageSize.x,
              (int)m_imageSize.y, m_outImage.id);
-    } else {
-        ERROR("Failed to created output texture of size = %d x %d", (int)m_imageSize.x,
-              (int)m_imageSize.y);
     }
 }
 
@@ -235,14 +226,9 @@ void Renderer::makeBufferObjects() {
 
     if (m_sceneSpheresBuffer != 0) {
         TRACE("Created buffer for scene-spheres (ssbo-id: %u)", m_sceneSpheresBuffer);
-    } else {
-        ERROR("Failed to create buffer for scene-spheres");
     }
-
     if (m_sceneTrianglesBuffer != 0) {
         TRACE("Created buffer for scene-triangles (ssbo-id: %u)", m_sceneTrianglesBuffer);
-    } else {
-        ERROR("Failed to create buffer for scene-triangles");
     }
 
     if (m_sceneSpheresBuffer == 0 && m_sceneTrianglesBuffer == 0) {

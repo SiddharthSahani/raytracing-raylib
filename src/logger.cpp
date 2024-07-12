@@ -7,7 +7,7 @@
 namespace logger {
 
 
-LogLevel currentLogLevel = LogLevel::ERROR;
+LogLevel currentLogLevel = LogLevel::INFO;
 
 
 void setLogLevel(LogLevel level) { currentLogLevel = level; }
@@ -27,18 +27,6 @@ void trace(const char* format, ...) {
 
 void info(const char* format, ...) {
     if (currentLogLevel > LogLevel::INFO) {
-        return;
-    }
-
-    va_list args;
-    va_start(args, format);
-    vprintf(format, args);
-    va_end(args);
-}
-
-
-void error(const char* format, ...) {
-    if (currentLogLevel > LogLevel::ERROR) {
         return;
     }
 

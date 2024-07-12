@@ -4,6 +4,7 @@
 
 #include <raylib/raylib.h>
 #include <variant>
+#include <string>
 
 
 namespace rt {
@@ -24,8 +25,9 @@ struct A_ChannelInfo {
 class Material {
 
 public:
-    Material();
+    Material(const std::string& name);
     ~Material();
+    const std::string& getName() const { return m_name; }
     void setAlbedo(RGB_ChannelInfo info);
     void setAlbedo(const char* filepath);
     void setAlbedo(Image image);
@@ -45,6 +47,7 @@ private:
     BlockInfo getBlockInfo(int blockIndex) const;
 
 private:
+    std::string m_name;
     std::variant<RGB_ChannelInfo, Image> m_albedoData;
     std::variant<A_ChannelInfo, Image> m_roughnessData;
 

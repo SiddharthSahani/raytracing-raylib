@@ -19,7 +19,7 @@ rt::CompiledScene createRandomScene(int numSpheres, int numMats) {
         });
         float roughness = GetRandomValue(0, 5) / 10.0;
 
-        auto mat = std::make_shared<rt::Material>();
+        auto mat = std::make_shared<rt::Material>(TextFormat("mat-%d", i));
         mat->setAlbedo({.value = {col.x, col.y, col.z}, .deviation = 0.05});
         mat->setRoughness({.value = roughness, .deviation = 0.01});
         materials.push_back(mat);
@@ -44,7 +44,7 @@ rt::CompiledScene createRandomScene(int numSpheres, int numMats) {
 
     scene.backgroundColor = {210, 210, 240, 255};
 
-    return rt::CompiledScene("scene-3", scene, {2048, 2048});
+    return rt::CompiledScene(TextFormat("random-scene-%d", numSpheres), scene, {2048, 2048});
 }
 
 
@@ -53,9 +53,9 @@ rt::CompiledScene createScene_1() {
     rt::Scene scene;
 
     // defining materials
-    auto sphereMat = std::make_shared<rt::Material>();
-    auto redMat = std::make_shared<rt::Material>();
-    auto mirrorMat = std::make_shared<rt::Material>();
+    auto sphereMat = std::make_shared<rt::Material>("Sphere Material");
+    auto redMat = std::make_shared<rt::Material>("Red Material");
+    auto mirrorMat = std::make_shared<rt::Material>("Mirror Material");
 
     sphereMat->setAlbedo({.value = {0.2, 0.9, 0.8}, .deviation = 0.03});
     // sphereMat->setAlbedo("earthmap1k.png");
@@ -111,10 +111,10 @@ rt::CompiledScene createScene_2() {
     rt::Scene scene;
 
     // defining materials
-    auto purpleMat = std::make_shared<rt::Material>();
-    auto blueMat = std::make_shared<rt::Material>();
-    auto emissiveMat = std::make_shared<rt::Material>();
-    auto mirrorMat = std::make_shared<rt::Material>();
+    auto purpleMat = std::make_shared<rt::Material>("Purple Material");
+    auto blueMat = std::make_shared<rt::Material>("Blue Material");
+    auto emissiveMat = std::make_shared<rt::Material>("Emissive Material");
+    auto mirrorMat = std::make_shared<rt::Material>("Mirror Material");
 
     purpleMat->setAlbedo({.value = {1.0, 0.0, 1.0}, .deviation = 0.1});
 

@@ -6,7 +6,7 @@
 namespace rt {
 
 
-Material::Material() {
+Material::Material(const std::string& name) : m_name(name) {
     m_albedoData = RGB_ChannelInfo{
         .value = {0.9, 0.9, 0.9},
         .deviation = 0.1,
