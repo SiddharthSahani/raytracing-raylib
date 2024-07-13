@@ -104,6 +104,17 @@ void Renderer::resetImage() {
 }
 
 
+bool Renderer::saveImage(const char* filepath) const {
+    TRACE("Saving texture as '%s'", filepath);
+    Image img = LoadImageFromTexture(m_outImage);
+    bool res = ExportImage(img, filepath);
+    if (res) {
+        INFO("Saved texture as '%s'", filepath);
+    }
+    return res;
+}
+
+
 void Renderer::setCamera(const SceneCamera& camera) const {
     const rt::Camera& iCamera = camera.get();
 

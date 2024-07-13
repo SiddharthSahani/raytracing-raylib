@@ -264,6 +264,10 @@ int main() {
             renderer.setConfig(config);
         }
 
+        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S)) {
+            renderer.saveImage("output.png");
+        }
+
         renderer.render();
     }
 }
