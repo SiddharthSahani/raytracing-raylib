@@ -29,10 +29,10 @@ public:
     ~Material();
     const std::string& getName() const { return m_name; }
     void setAlbedo(RGB_ChannelInfo info);
-    void setAlbedo(const char* filepath);
+    void setAlbedo(const char* fileName);
     void setAlbedo(Image image);
     void setRoughness(A_ChannelInfo info);
-    void setRoughness(const char* filepath);
+    void setRoughness(const char* fileName);
     void setRoughness(Image image);
 
 private:

@@ -28,7 +28,7 @@ public:
     void render(bool compute = true, bool draw = true);
     void compileComputeShader(CompileShaderParams params);
     void resetImage();
-    bool saveImage(const char* filepath) const;
+    bool saveImage(const char* fileName) const;
 
     void setCamera(const SceneCamera& camera) const;
     void setScene(const rt::CompiledScene& scene) const;

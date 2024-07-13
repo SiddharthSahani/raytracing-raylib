@@ -1,4 +1,6 @@
 
+#pragma once
+
 #include "src/packedmaterialdata.h"
 #include "src/scene.h"
 #include "src/structs/objects.h"

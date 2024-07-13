@@ -51,10 +51,10 @@ void Renderer::compileComputeShader(CompileShaderParams _params) {
 
     makeBufferObjects();
 
-    const char* filepath = "shaders/raytracer.glsl";
-    char* fileText = LoadFileText(filepath);
+    const char* shaderPath = "shaders/raytracer.glsl";
+    char* fileText = LoadFileText(shaderPath);
     if (fileText != NULL) {
-        TRACE("File '%s' loaded succesfully", filepath);
+        TRACE("File '%s' loaded succesfully", shaderPath);
     }
 
     auto replaceFn = [&](const char* replaceStr, int number) {
@@ -92,7 +92,7 @@ void Renderer::compileComputeShader(CompileShaderParams _params) {
     }
 
     UnloadFileText(fileText);
-    TRACE("Unloaded file '%s'", filepath);
+    TRACE("Unloaded file '%s'", shaderPath);
 }
 
 
@@ -104,12 +104,12 @@ void Renderer::resetImage() {
 }
 
 
-bool Renderer::saveImage(const char* filepath) const {
-    TRACE("Saving texture as '%s'", filepath);
+bool Renderer::saveImage(const char* fileName) const {
+    TRACE("Saving texture as '%s'", fileName);
     Image img = LoadImageFromTexture(m_outImage);
-    bool res = ExportImage(img, filepath);
+    bool res = ExportImage(img, fileName);
     if (res) {
-        INFO("Saved texture as '%s'", filepath);
+        INFO("Saved texture as '%s'", fileName);
     }
     return res;
 }

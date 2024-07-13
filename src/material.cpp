@@ -39,7 +39,7 @@ Material::~Material() {
 void Material::setAlbedo(RGB_ChannelInfo info) { m_albedoData = info; }
 
 
-void Material::setAlbedo(const char* filepath) { setAlbedo(LoadImage(filepath)); }
+void Material::setAlbedo(const char* fileName) { setAlbedo(LoadImage(fileName)); }
 
 
 void Material::setAlbedo(Image image) {
@@ -51,7 +51,7 @@ void Material::setAlbedo(Image image) {
 void Material::setRoughness(A_ChannelInfo info) { m_roughnessData = info; }
 
 
-void Material::setRoughness(const char* filepath) { setRoughness(LoadImage(filepath)); }
+void Material::setRoughness(const char* fileName) { setRoughness(LoadImage(fileName)); }
 
 
 void Material::setRoughness(Image image) {
