@@ -25,7 +25,7 @@ class Renderer {
 public:
     Renderer(Vector2 windowSize, Vector2 imageSize);
     ~Renderer();
-    void render(bool compute = true, bool draw = true);
+    void render(bool compute = true, bool draw = true, bool drawDebug = false);
     void compileComputeShader(CompileShaderParams params);
     void resetImage();
     bool saveImage(const char* fileName) const;
@@ -40,6 +40,7 @@ private:
     template <class... Args> int getUniformLoc(const char* fmt, Args... args) const;
     void runComputeShader();
     void drawOutImage() const;
+    void drawDebugDisplay() const;
     void makeOutImage();
     void makeBufferObjects();
     void setScene_spheres(const rt::CompiledScene& scene) const;
@@ -54,6 +55,9 @@ private:
     unsigned m_computeShaderProgram = 0;
     CompileShaderParams m_compileParams;
     bool m_compiled = false;
+
+    mutable const rt::CompiledScene* m_currentScene = nullptr;
+    mutable const rt::Config* m_currentConfig = nullptr;
 
     unsigned m_sceneSpheresBuffer = 0;
     unsigned m_sceneTrianglesBuffer = 0;

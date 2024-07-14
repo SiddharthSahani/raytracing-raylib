@@ -30,12 +30,20 @@ Renderer::~Renderer() {
 }
 
 
-void Renderer::render(bool compute, bool draw) {
+void Renderer::render(bool compute, bool draw, bool drawDebug) {
     if (compute) {
         runComputeShader();
     }
     if (draw) {
+        BeginDrawing();
+        ClearBackground(GREEN);
+
         drawOutImage();
+        if (drawDebug) {
+            drawDebugDisplay();
+        }
+
+        EndDrawing();
     }
 }
 
@@ -131,6 +139,8 @@ void Renderer::setCamera(const SceneCamera& camera) const {
 
 
 void Renderer::setScene(const rt::CompiledScene& scene) const {
+    m_currentScene = &scene;
+
     INFO("Setting scene: '%s'", scene.getname().c_str());
     rlEnableShader(m_computeShaderProgram);
 
@@ -157,6 +167,8 @@ void Renderer::setScene(const rt::CompiledScene& scene) const {
 
 
 void Renderer::setConfig(const rt::Config& config) const {
+    m_currentConfig = &config;
+
     INFO("Setting configuration: {numSamples: %d, bounceLimit: %d}", (int)config.numSamples,
          (int)config.bounceLimit);
     rlEnableShader(m_computeShaderProgram);
@@ -198,17 +210,32 @@ void Renderer::runComputeShader() {
 
 
 void Renderer::drawOutImage() const {
-    BeginDrawing();
-    ClearBackground(GREEN);
-
     DrawTexturePro(m_outImage, {0, 0, m_imageSize.x, m_imageSize.y},
                    {0, 0, m_windowSize.x, m_windowSize.y}, {0, 0}, 0, WHITE);
+}
 
-    DrawFPS(10, 10);
-    DrawText(TextFormat("Frame Time: %.5f", GetFrameTime()), 10, 30, 20, DARKBLUE);
-    DrawText(TextFormat("Frame Index: %d", m_frameIndex), 10, 50, 20, DARKBLUE);
 
-    EndDrawing();
+void Renderer::drawDebugDisplay() const {
+    DrawRectangle(5, 5, 360, 205, {0, 0, 0, 30});
+    const char* text = nullptr;
+
+    text = TextFormat("Frame time: %.3fms (%d FPS)", GetFrameTime(), GetFPS());
+    DrawText(text, 10, 10, 20, BLUE);
+
+    DrawText("Config:", 10, 40, 20, BLUE);
+    text = TextFormat("Samples per frame: %d", (int)m_currentConfig->numSamples);
+    DrawText(text, 20, 60, 20, BLUE);
+    text = TextFormat("Max bounces: %d", (int)m_currentConfig->bounceLimit);
+    DrawText(text, 20, 80, 20, BLUE);
+
+    text = TextFormat("Scene: %s", m_currentScene->getname().c_str());
+    DrawText(text, 10, 120, 20, BLUE);
+    text = TextFormat("Spheres: %d", m_currentScene->m_spheres.size());
+    DrawText(text, 20, 140, 20, BLUE);
+    text = TextFormat("Triangles: %d", m_currentScene->m_triangles.size());
+    DrawText(text, 20, 160, 20, BLUE);
+    text = TextFormat("Num materials: %d", m_currentScene->m_materialData->getMaterialCount());
+    DrawText(text, 20, 180, 20, BLUE);
 }
 
 

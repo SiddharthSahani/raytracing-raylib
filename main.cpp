@@ -1,7 +1,7 @@
 
 #include "src/camera.h"
-#include "src/renderer.h"
 #include "src/logger.h"
+#include "src/renderer.h"
 #include "src/test_scenes.h"
 
 
@@ -62,6 +62,7 @@ int main() {
     unsigned sceneIdx = 0;
     unsigned configIdx = 2;
     bool benchmarkMode = false;
+    bool debugDraw = false;
 
     renderer.setCamera(camera);
     renderer.setScene(scenes[sceneIdx]);
@@ -75,6 +76,9 @@ int main() {
             } else {
                 SetTargetFPS(30);
             }
+        }
+        if (IsKeyPressed(KEY_D)) {
+            debugDraw = !debugDraw;
         }
 
         if (camera.update(GetFrameTime())) {
@@ -97,6 +101,6 @@ int main() {
             renderer.saveImage("output.png");
         }
 
-        renderer.render();
+        renderer.render(true, true, debugDraw);
     }
 }
