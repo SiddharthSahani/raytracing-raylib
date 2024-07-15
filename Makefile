@@ -4,14 +4,17 @@ DEFINES  =
 INCLUDES = -I . -I external/
 LDFLAGS  = -L external/raylib -lraylib -lgdi32 -lwinmm
 
-TARGET = raytracing-raylib.exe
-
 SOURCES = $(wildcard src/*.cpp)
 OBJECTS = $(SOURCES:.cpp=.o)
 
+REALTIME_TARGET = realtime-raytracing.exe
 
-$(TARGET): main.cpp $(OBJECTS)
-	g++ -o $(TARGET) $^ $(CXXFLAGS) $(DEFINES) $(INCLUDES) $(LDFLAGS)
+
+realtime: $(REALTIME_TARGET)
+
+
+$(REALTIME_TARGET): realtime-raytracing.cpp $(OBJECTS)
+	g++ -o $(REALTIME_TARGET) $^ $(CXXFLAGS) $(DEFINES) $(INCLUDES) $(LDFLAGS)
 
 
 %.o: %.cpp
@@ -20,4 +23,4 @@ $(TARGET): main.cpp $(OBJECTS)
 
 clean:
 	rm -f $(wildcard src/*.o)
-	rm -f $(TARGET)
+	rm -f $(REALTIME_TARGET)
