@@ -3,6 +3,7 @@
 #include "src/logger.h"
 #include "src/renderer.h"
 #include "src/test_scenes.h"
+#include "src/cli.h"
 
 
 bool changeIndex(unsigned int& index, KeyboardKey key) {
@@ -13,15 +14,14 @@ bool changeIndex(unsigned int& index, KeyboardKey key) {
 }
 
 
-int main() {
+int main(int argc, const char* argv[]) {
+    CommandLineOptions options(argc, argv);
     logger::setLogLevel(logger::LogLevel::TRACE);
-    const int windowWidth = 1280;
-    const int windowHeight = 720;
-    const float scale = 2.0;
-    const int imageWidth = windowWidth / scale;
-    const int imageHeight = windowHeight / scale;
 
-    Renderer renderer({windowWidth, windowHeight}, {imageWidth, imageHeight});
+    const float imageWidth = options.windowWidth / options.imageScale;
+    const float imageHeight = options.windowHeight / options.imageScale;
+
+    Renderer renderer({options.windowWidth, options.windowHeight}, {imageWidth, imageHeight});
 
     CompileShaderParams params = {
         .workgroupSize = 8,
