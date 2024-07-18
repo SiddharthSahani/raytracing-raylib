@@ -8,9 +8,11 @@
 namespace rt {
 
 
-CompiledScene::CompiledScene(const std::string& name, const Scene& scene, Vector2 packedMatTexSize)
-    : m_name(name) {
-    INFO("Compiling scene: '%s'", name.c_str());
+static unsigned currentId = 0;
+
+
+CompiledScene::CompiledScene(const Scene& scene, Vector2 packedMatTexSize) : m_id(++currentId) {
+    INFO("Compiling scene [ID: %u]", m_id);
 
     // normalizing background color
     m_backgroundColor = {
@@ -58,7 +60,7 @@ CompiledScene::CompiledScene(const std::string& name, const Scene& scene, Vector
     }
 
     for (auto pair : materialCounter) {
-        TRACE("    '%s' is referenced by %d objects", materials[pair.first]->getName().c_str(),
+        TRACE("    Material[ID: %u] is referenced by %d objects", materials[pair.first]->getId(),
               pair.second);
     }
 
@@ -67,8 +69,7 @@ CompiledScene::CompiledScene(const std::string& name, const Scene& scene, Vector
     INFO("    Scene has %d triangles", m_triangles.size());
 
     // creating the material data
-    std::string packedMaterialName = TextFormat("'%s's packedMaterialData", m_name.c_str());
-    m_materialData = new PackedMaterialData(packedMaterialName, materials.size(), packedMatTexSize);
+    m_materialData = new PackedMaterialData(materials.size(), packedMatTexSize);
     for (int i = 0; i < materials.size(); i++) {
         m_materialData->setMaterial(i, *materials[i]);
     }
@@ -76,7 +77,7 @@ CompiledScene::CompiledScene(const std::string& name, const Scene& scene, Vector
 
 
 CompiledScene::~CompiledScene() {
-    TRACE("Unloading scene: '%s'", m_name.c_str());
+    TRACE("Unloading scene [ID: %u]", m_id);
     delete m_materialData;
 }
 

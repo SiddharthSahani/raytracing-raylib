@@ -141,7 +141,7 @@ void Renderer::setCamera(const SceneCamera& camera) const {
 void Renderer::setScene(const rt::CompiledScene& scene) const {
     m_currentScene = &scene;
 
-    INFO("Setting scene: '%s'", scene.getname().c_str());
+    INFO("Setting scene [ID: %u]", scene.getId());
     rlEnableShader(m_computeShaderProgram);
 
     const int uniLoc_numMaterials = getUniformLoc("numMaterials");
@@ -228,7 +228,7 @@ void Renderer::drawDebugDisplay() const {
     text = TextFormat("Max bounces: %d", (int)m_currentConfig->bounceLimit);
     DrawText(text, 20, 80, 20, BLUE);
 
-    text = TextFormat("Scene: %s", m_currentScene->getname().c_str());
+    text = TextFormat("Scene: %u", m_currentScene->getId());
     DrawText(text, 10, 120, 20, BLUE);
     text = TextFormat("Spheres: %d", m_currentScene->m_spheres.size());
     DrawText(text, 20, 140, 20, BLUE);

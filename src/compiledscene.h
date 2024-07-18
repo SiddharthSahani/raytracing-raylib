@@ -16,12 +16,12 @@ namespace rt {
 class CompiledScene {
 
 public:
-    CompiledScene(const std::string& name, const Scene& scene, Vector2 packedMatTexSize);
+    CompiledScene(const Scene& scene, Vector2 packedMatTexSize);
     ~CompiledScene();
-    const std::string& getname() const { return m_name; }
+    unsigned getId() const { return m_id; }
 
 private:
-    std::string m_name;
+    unsigned m_id;
     Vector3 m_backgroundColor;
     std::vector<internal::Sphere> m_spheres;
     std::vector<internal::Triangle> m_triangles;

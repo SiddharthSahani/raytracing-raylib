@@ -6,11 +6,13 @@
 namespace rt {
 
 
-PackedMaterialData::PackedMaterialData(const std::string& name, int materialCount,
-                                       Vector2 textureSize)
-    : m_name(name), m_materialCount(materialCount), m_textureSize(textureSize) {
-    INFO("Creating materialData: '%s' with %d materials and of size = %d x %d", name.c_str(),
-         materialCount, (int)m_textureSize.x, (int)m_textureSize.y);
+static unsigned currentId = 0;
+
+
+PackedMaterialData::PackedMaterialData(int materialCount, Vector2 textureSize)
+    : m_id(++currentId), m_materialCount(materialCount), m_textureSize(textureSize) {
+    INFO("Creating materialData with %d materials and of size = %d x %d [ID: %u]", materialCount,
+         (int)m_textureSize.x, (int)m_textureSize.y, m_id);
 
     createFrameBuffer();
     createShader();
@@ -18,7 +20,7 @@ PackedMaterialData::PackedMaterialData(const std::string& name, int materialCoun
 
 
 PackedMaterialData::~PackedMaterialData() {
-    TRACE("Unloading '%s' materialData", m_name.c_str());
+    TRACE("Unloading materialData [ID: %u]", m_id);
     UnloadRenderTexture(m_renderTexture);
     UnloadShader(m_shader);
 }
@@ -63,7 +65,7 @@ void PackedMaterialData::setMaterial(int index, const Material& material) {
         SetShaderValueTexture(m_shader, uTextureRGB_uniLoc, info.textures[0]);
         SetShaderValueTexture(m_shader, uTextureA_uniLoc, info.textures[1]);
 
-        TRACE("    Setting materialIndex = %d with '%s'", index, material.getName().c_str());
+        TRACE("    Setting materialIndex = %d with Material[ID: %u]", index, material.getId());
         TRACE("        Uniform vec2 set [index = %d | uCurrent = (%f %f)]", uCurrent_uniLoc,
               uCurrent.x, uCurrent.y);
         TRACE("        Uniform vec4 set [index = %d | mean = (%f %f %f %f)]", mean_uniLoc,
@@ -91,7 +93,7 @@ void PackedMaterialData::setMaterial(int index, const Material& material) {
 
 void PackedMaterialData::createFrameBuffer() {
     m_renderTexture = LoadRenderTexture(m_textureSize.x, m_textureSize.y);
-    TRACE("    Created texture for '%s' materialData", m_name.c_str());
+    TRACE("    Created texture for materialData [ID: %u]", m_id);
 }
 
 

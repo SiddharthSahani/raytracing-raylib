@@ -6,7 +6,10 @@
 namespace rt {
 
 
-Material::Material(const std::string& name) : m_name(name) {
+static unsigned currentId = 0;
+
+
+Material::Material() : m_id(++currentId) {
     m_albedoData = RGB_ChannelInfo{
         .value = {0.9, 0.9, 0.9},
         .deviation = 0.1,
@@ -70,10 +73,6 @@ Material::BlockInfo Material::getBlockInfo(int blockIndex) const {
         case 0:
             variant_RGB = &m_albedoData;
             variant_A = &m_roughnessData;
-            break;
-
-        default:
-            TraceLog(LOG_WARNING, "Invalid blockIndex: %d | Material::getBlockIndex", blockIndex);
             break;
     }
 
