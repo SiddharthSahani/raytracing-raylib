@@ -4,7 +4,8 @@
 
 
 CommandLineOptions::CommandLineOptions(int argc, const char* argv[]) {
-    argparse::ArgumentParser parser("realtime-raytracing", "0.1");
+    argparse::ArgumentParser parser("realtime-raytracing", "0.1",
+                                    argparse::default_arguments::help);
 
     parser.add_argument("-w", "--windowWidth")
         .help("Window width")
@@ -21,6 +22,11 @@ CommandLineOptions::CommandLineOptions(int argc, const char* argv[]) {
         .default_value(2.0f)
         .scan<'f', float>();
 
+    parser.add_argument("-v", "--verbose")
+        .help("Enable verbose logging")
+        .default_value(false)
+        .implicit_value(true);
+
     try {
         parser.parse_args(argc, argv);
     } catch (const std::runtime_error& err) {
@@ -32,4 +38,5 @@ CommandLineOptions::CommandLineOptions(int argc, const char* argv[]) {
     windowWidth = parser.get<unsigned>("windowWidth");
     windowHeight = parser.get<unsigned>("windowHeight");
     imageScale = parser.get<float>("scale");
+    verbose = parser.get<bool>("verbose");
 }

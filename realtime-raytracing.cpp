@@ -16,7 +16,7 @@ bool changeIndex(unsigned int& index, KeyboardKey key) {
 
 int main(int argc, const char* argv[]) {
     CommandLineOptions options(argc, argv);
-    logger::setLogLevel(logger::LogLevel::TRACE);
+    logger::setLogLevel(options.verbose ? logger::LogLevel::TRACE : logger::LogLevel::INFO);
 
     const float imageWidth = options.windowWidth / options.imageScale;
     const float imageHeight = options.windowHeight / options.imageScale;
