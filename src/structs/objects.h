@@ -2,7 +2,6 @@
 #pragma once
 
 #include <raylib/raylib.h>
-#include <raylib/raymath.h> // Vector3Normalize
 
 
 namespace rt::internal {

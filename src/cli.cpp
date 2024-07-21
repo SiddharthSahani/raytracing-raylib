@@ -4,8 +4,7 @@
 
 
 CommandLineOptions::CommandLineOptions(int argc, const char* argv[]) {
-    argparse::ArgumentParser parser("realtime-raytracing", "0.1",
-                                    argparse::default_arguments::help);
+    argparse::ArgumentParser parser("realtime-raytracing", "0.1");
 
     parser.add_argument("-w", "--windowWidth")
         .help("Window width")
@@ -22,7 +21,7 @@ CommandLineOptions::CommandLineOptions(int argc, const char* argv[]) {
         .default_value(2.0f)
         .scan<'f', float>();
 
-    parser.add_argument("-v", "--verbose")
+    parser.add_argument("--verbose")
         .help("Enable verbose logging")
         .default_value(false)
         .implicit_value(true);

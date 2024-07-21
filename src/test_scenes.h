@@ -12,9 +12,9 @@ rt::CompiledScene createRandomScene(int numSpheres, int numMats) {
     std::vector<std::shared_ptr<rt::Material>> materials;
     for (int i = 0; i < numMats; i++) {
         Vector4 col = ColorNormalize({
-            .r = (uint8_t)GetRandomValue(0, 255),
-            .g = (uint8_t)GetRandomValue(0, 255),
-            .b = (uint8_t)GetRandomValue(0, 255),
+            .r = (uint8_t) GetRandomValue(0, 255),
+            .g = (uint8_t) GetRandomValue(0, 255),
+            .b = (uint8_t) GetRandomValue(0, 255),
             .a = 255,
         });
         float roughness = GetRandomValue(0, 5) / 10.0;

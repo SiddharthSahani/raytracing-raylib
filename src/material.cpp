@@ -1,6 +1,5 @@
 
 #include "src/material.h"
-#include <random>
 
 
 namespace rt {
@@ -9,12 +8,12 @@ namespace rt {
 static unsigned currentId = 0;
 
 
-Material::Material() : m_id(++currentId) {
+Material::Material()
+    : m_id(++currentId) {
     m_albedoData = RGB_ChannelInfo{
         .value = {0.9, 0.9, 0.9},
         .deviation = 0.1,
     };
-
     m_roughnessData = A_ChannelInfo{
         .value = 1.0,
         .deviation = 0.01,
@@ -39,10 +38,14 @@ Material::~Material() {
 }
 
 
-void Material::setAlbedo(RGB_ChannelInfo info) { m_albedoData = info; }
+void Material::setAlbedo(RGB_ChannelInfo info) {
+    m_albedoData = info;
+}
 
 
-void Material::setAlbedo(const char* fileName) { setAlbedo(LoadImage(fileName)); }
+void Material::setAlbedo(const char* fileName) {
+    setAlbedo(LoadImage(fileName));
+}
 
 
 void Material::setAlbedo(Image image) {
@@ -51,10 +54,14 @@ void Material::setAlbedo(Image image) {
 }
 
 
-void Material::setRoughness(A_ChannelInfo info) { m_roughnessData = info; }
+void Material::setRoughness(A_ChannelInfo info) {
+    m_roughnessData = info;
+}
 
 
-void Material::setRoughness(const char* fileName) { setRoughness(LoadImage(fileName)); }
+void Material::setRoughness(const char* fileName) {
+    setRoughness(LoadImage(fileName));
+}
 
 
 void Material::setRoughness(Image image) {
@@ -74,6 +81,7 @@ Material::BlockInfo Material::getBlockInfo(int blockIndex) const {
             variant_RGB = &m_albedoData;
             variant_A = &m_roughnessData;
             break;
+
     }
 
     Material::BlockInfo res;

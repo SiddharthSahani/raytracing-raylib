@@ -11,8 +11,7 @@ static unsigned currentId = 0;
 
 PackedMaterialData::PackedMaterialData(int materialCount, Vector2 textureSize)
     : m_id(++currentId), m_materialCount(materialCount), m_textureSize(textureSize) {
-    INFO("Creating materialData with %d materials and of size = %d x %d [ID: %u]", materialCount,
-         (int)m_textureSize.x, (int)m_textureSize.y, m_id);
+    INFO("Creating materialData with %d materials and of size = %d x %d [ID: %u]", materialCount, (int) m_textureSize.x, (int) m_textureSize.y, m_id);
 
     createFrameBuffer();
     createShader();
@@ -41,12 +40,7 @@ void PackedMaterialData::setMaterial(int index, const Material& material) {
     static int uTextureA_uniLoc = GetShaderLocation(m_shader, "uTextureA");
 
     SetShaderValue(m_shader, uResolution_uniLoc, &m_textureSize, SHADER_UNIFORM_VEC2);
-    // TRACE("    Uniform vec2 set [index = %d | uResolution = (%f %f)]", uResolution_uniLoc,
-    // m_textureSize.x, m_textureSize.y);
-
     SetShaderValue(m_shader, uGridSize_uniLoc, &uGridSize, SHADER_UNIFORM_VEC2);
-    // TRACE("    Uniform vec2 set [index = %d | uGridSize = (%f %f)]", uGridSize_uniLoc,
-    // uGridSize.x, uGridSize.y);
 
     EndShaderMode();
 
@@ -55,7 +49,7 @@ void PackedMaterialData::setMaterial(int index, const Material& material) {
 
     for (int i = 0; i < 1; i++) {
         const Material::BlockInfo info = material.getBlockInfo(i);
-        const Vector2 uCurrent = {(float)i, (float)index};
+        const Vector2 uCurrent = {(float) i, (float) index};
 
         BeginShaderMode(m_shader);
         SetShaderValue(m_shader, uCurrent_uniLoc, &uCurrent, SHADER_UNIFORM_VEC2);
@@ -66,14 +60,10 @@ void PackedMaterialData::setMaterial(int index, const Material& material) {
         SetShaderValueTexture(m_shader, uTextureA_uniLoc, info.textures[1]);
 
         TRACE("    Setting materialIndex = %d with Material[ID: %u]", index, material.getId());
-        TRACE("        Uniform vec2 set [index = %d | uCurrent = (%f %f)]", uCurrent_uniLoc,
-              uCurrent.x, uCurrent.y);
-        TRACE("        Uniform vec4 set [index = %d | mean = (%f %f %f %f)]", mean_uniLoc,
-              info.mean.x, info.mean.y, info.mean.z, info.mean.w);
-        TRACE("        Uniform vec2 set [index = %d | deviation = (%f %f)]", deviation_uniLoc,
-              info.deviation.x, info.deviation.y);
-        TRACE("        Uniform vec2 set [index = %d | useTextures = (%f %f)]", useTextures_uniLoc,
-              info.useTextures.x, info.useTextures.y);
+        TRACE("        Uniform vec2 set [index = %d | uCurrent = (%f %f)]", uCurrent_uniLoc, uCurrent.x, uCurrent.y);
+        TRACE("        Uniform vec4 set [index = %d | mean = (%f %f %f %f)]", mean_uniLoc, info.mean.x, info.mean.y, info.mean.z, info.mean.w);
+        TRACE("        Uniform vec2 set [index = %d | deviation = (%f %f)]", deviation_uniLoc, info.deviation.x, info.deviation.y);
+        TRACE("        Uniform vec2 set [index = %d | useTextures = (%f %f)]", useTextures_uniLoc, info.useTextures.x, info.useTextures.y);
 
         DrawRectangle(0, 0, m_textureSize.x, m_textureSize.y, RED);
         EndShaderMode();

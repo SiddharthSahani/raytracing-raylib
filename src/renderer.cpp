@@ -147,41 +147,34 @@ void Renderer::setScene(const rt::CompiledScene& scene) const {
     const int uniLoc_numMaterials = getUniformLoc("numMaterials");
     float numMaterials = scene.m_materialData->getMaterialCount();
     rlSetUniform(uniLoc_numMaterials, &numMaterials, RL_SHADER_UNIFORM_FLOAT, 1);
-    TRACE("    Uniform float set [index = %d | numMaterials = %d]", uniLoc_numMaterials,
-          scene.m_materialData->getMaterialCount());
+    TRACE("    Uniform float set [index = %d | numMaterials = %d]", uniLoc_numMaterials, scene.m_materialData->getMaterialCount());
 
     const int uniLoc_materialTexture = getUniformLoc("materialTexture");
     rlSetUniformSampler(uniLoc_materialTexture, scene.m_materialData->getTextureId());
-    TRACE("    Uniform sampler set [index = %d | materialTextureId = %d]", uniLoc_materialTexture,
-          scene.m_materialData->getTextureId());
+    TRACE("    Uniform sampler set [index = %d | materialTextureId = %d]", uniLoc_materialTexture, scene.m_materialData->getTextureId());
 
     setScene_spheres(scene);
     setScene_triangles(scene);
 
     const int uniLoc_backgroundColor = getUniformLoc("sceneInfo.backgroundColor");
     rlSetUniform(uniLoc_backgroundColor, &scene.m_backgroundColor, RL_SHADER_UNIFORM_VEC3, 1);
-    TRACE("    Uniform vec3 set [index = %d | scene.backgroundColor = (%f %f %f)]",
-          uniLoc_backgroundColor, scene.m_backgroundColor.x, scene.m_backgroundColor.y,
-          scene.m_backgroundColor.z);
+    TRACE("    Uniform vec3 set [index = %d | scene.backgroundColor = (%f %f %f)]", uniLoc_backgroundColor, scene.m_backgroundColor.x, scene.m_backgroundColor.y, scene.m_backgroundColor.z);
 }
 
 
 void Renderer::setConfig(const rt::Config& config) const {
     m_currentConfig = &config;
 
-    INFO("Setting configuration: {numSamples: %d, bounceLimit: %d}", (int)config.numSamples,
-         (int)config.bounceLimit);
+    INFO("Setting configuration: {numSamples: %d, bounceLimit: %d}", (int) config.numSamples, (int) config.bounceLimit);
     rlEnableShader(m_computeShaderProgram);
 
     const int uniLoc_numSamples = getUniformLoc("config.numSamples");
     rlSetUniform(uniLoc_numSamples, &config.numSamples, RL_SHADER_UNIFORM_FLOAT, 1);
-    TRACE("    Uniform float set [index = %d | config.numSamples = %d]", uniLoc_numSamples,
-          (int)config.numSamples);
+    TRACE("    Uniform float set [index = %d | config.numSamples = %d]", uniLoc_numSamples, (int) config.numSamples);
 
     const int uniLoc_bounceLimit = getUniformLoc("config.bounceLimit");
     rlSetUniform(uniLoc_bounceLimit, &config.bounceLimit, RL_SHADER_UNIFORM_FLOAT, 1);
-    TRACE("    Uniform float set [index = %d | config.bounceLimit = %d]", uniLoc_bounceLimit,
-          (int)config.bounceLimit);
+    TRACE("    Uniform float set [index = %d | config.bounceLimit = %d]", uniLoc_bounceLimit, (int) config.bounceLimit);
 }
 
 
@@ -210,8 +203,9 @@ void Renderer::runComputeShader() {
 
 
 void Renderer::drawOutImage() const {
-    DrawTexturePro(m_outImage, {0, 0, m_imageSize.x, m_imageSize.y},
-                   {0, 0, m_windowSize.x, m_windowSize.y}, {0, 0}, 0, WHITE);
+    const Rectangle srcRect = {0, 0, m_imageSize.x, m_imageSize.y};
+    const Rectangle destRect = {0, 0, m_windowSize.x, m_windowSize.y};
+    DrawTexturePro(m_outImage, srcRect, destRect, {0, 0}, 0, WHITE);
 }
 
 
@@ -246,8 +240,7 @@ void Renderer::makeOutImage() {
     UnloadImage(image);
 
     if (m_outImage.id != 0) {
-        INFO("Created output texture of size = %d x %d (id: %u)", (int)m_imageSize.x,
-             (int)m_imageSize.y, m_outImage.id);
+        INFO("Created output texture of size = %d x %d (id: %u)", (int) m_imageSize.x, (int) m_imageSize.y, m_outImage.id);
     }
 }
 
@@ -257,10 +250,8 @@ void Renderer::makeBufferObjects() {
         return;
     }
 
-    m_sceneSpheresBuffer = rlLoadShaderBuffer(sizeof(rt::Sphere) * m_compileParams.maxSphereCount,
-                                              nullptr, RL_DYNAMIC_COPY);
-    m_sceneTrianglesBuffer = rlLoadShaderBuffer(
-        sizeof(rt::Triangle) * m_compileParams.maxTriangleCount, nullptr, RL_DYNAMIC_COPY);
+    m_sceneSpheresBuffer = rlLoadShaderBuffer(sizeof(rt::Sphere) * m_compileParams.maxSphereCount, nullptr, RL_DYNAMIC_COPY);
+    m_sceneTrianglesBuffer = rlLoadShaderBuffer(sizeof(rt::Triangle) * m_compileParams.maxTriangleCount, nullptr, RL_DYNAMIC_COPY);
 
     if (m_sceneSpheresBuffer != 0) {
         TRACE("Created buffer for scene-spheres (ssbo-id: %u)", m_sceneSpheresBuffer);
@@ -270,8 +261,7 @@ void Renderer::makeBufferObjects() {
     }
 
     if (m_sceneSpheresBuffer == 0 && m_sceneTrianglesBuffer == 0) {
-        INFO("Created buffers for scene's spheres and triangls (ssbos: %u %u)",
-             m_sceneSpheresBuffer, m_sceneTrianglesBuffer);
+        INFO("Created buffers for scene's spheres and triangls (ssbos: %u %u)", m_sceneSpheresBuffer, m_sceneTrianglesBuffer);
     }
 }
 
@@ -356,13 +346,11 @@ void Renderer::setScene_triangles(const rt::CompiledScene& scene) const {
         const unsigned triangleBufferSize = sizeof(rt::Triangle) * numTriangles;
         TRACE("    Setting scene-triangles buffer of size = %u bytes", triangleBufferSize);
 
-        rlUpdateShaderBuffer(m_sceneTrianglesBuffer, scene.m_triangles.data(), triangleBufferSize,
-                             0);
+        rlUpdateShaderBuffer(m_sceneTrianglesBuffer, scene.m_triangles.data(), triangleBufferSize, 0);
     }
 
     const int uniLoc_numTriangles = getUniformLoc("sceneInfo.numTriangles");
     rlSetUniform(uniLoc_numTriangles, &numTriangles, RL_SHADER_UNIFORM_INT, 1);
 
-    TRACE("    Uniform float set [index = %d | numTriangles =  %u]", uniLoc_numTriangles,
-          numTriangles);
+    TRACE("    Uniform float set [index = %d | numTriangles =  %u]", uniLoc_numTriangles, numTriangles);
 }

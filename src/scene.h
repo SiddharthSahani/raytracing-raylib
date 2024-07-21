@@ -16,6 +16,7 @@ struct Scene {
     std::vector<Sphere> spheres;
     std::vector<Triangle> triangles;
     Color backgroundColor;
+
 };
 
 

@@ -3,14 +3,14 @@
 #include <raylib/raymath.h>
 
 
-SceneCamera::SceneCamera(Vector3 position, Vector3 direction, float fov, Vector2 imgSize,
-                         SceneCameraParams params)
+SceneCamera::SceneCamera(Vector3 position, Vector3 direction, float fov, Vector2 imgSize, SceneCameraParams params)
     : m_direction(direction), m_params(params), m_fov(fov) {
     m_camera.position = position;
-    m_camera.invProjMat =
-        MatrixInvert(MatrixPerspective(fov * DEG2RAD, imgSize.x / imgSize.y, 0.1, 100.0));
-    m_camera.invViewMat =
-        MatrixInvert(MatrixLookAt(position, Vector3Add(position, direction), {0, 1, 0}));
+
+    Matrix projMat = MatrixPerspective(fov * DEG2RAD, imgSize.x / imgSize.y, 0.1, 100.0);
+    Matrix viewMat = MatrixLookAt(position, Vector3Add(position, direction), {0, 1, 0});
+    m_camera.invProjMat = MatrixInvert(projMat);
+    m_camera.invViewMat = MatrixInvert(viewMat);
 }
 
 
@@ -75,8 +75,8 @@ bool SceneCamera::update(float timestep) {
     }
 
     if (cameraUpdated) {
-        m_camera.invViewMat = MatrixInvert(
-            MatrixLookAt(m_camera.position, Vector3Add(m_camera.position, m_direction), {0, 1, 0}));
+        Matrix viewMat = MatrixLookAt(m_camera.position, Vector3Add(m_camera.position, m_direction), {0, 1, 0});
+        m_camera.invViewMat = MatrixInvert(viewMat);
     }
 
     return cameraUpdated;
