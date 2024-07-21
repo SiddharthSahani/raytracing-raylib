@@ -55,11 +55,11 @@ bool SceneCamera::update(float timestep) {
         cameraUpdated = true;
     }
     if (IsKeyDown(KEY_Q)) {
-        m_camera.position = Vector3Add(m_camera.position, Vector3Scale(upDirection, camSpeed));
+        m_camera.position = Vector3Subtract(m_camera.position, Vector3Scale(upDirection, camSpeed));
         cameraUpdated = true;
     }
     if (IsKeyDown(KEY_E)) {
-        m_camera.position = Vector3Subtract(m_camera.position, Vector3Scale(upDirection, camSpeed));
+        m_camera.position = Vector3Add(m_camera.position, Vector3Scale(upDirection, camSpeed));
         cameraUpdated = true;
     }
 
