@@ -268,9 +268,9 @@ void Renderer::makeBufferObjects() {
 
 void Renderer::setScene_spheres(const rt::CompiledScene& scene) const {
     unsigned numSpheres = scene.m_spheres.size();
+    numSpheres = std::min(numSpheres, m_compileParams.maxSphereCount);
 
     if (m_compileParams.storageType == SceneStorageType::Uniforms) {
-        numSpheres = std::min(numSpheres, m_compileParams.maxSphereCount);
 
         TRACE("    Setting scene-spheres uniform");
 
@@ -307,9 +307,9 @@ void Renderer::setScene_spheres(const rt::CompiledScene& scene) const {
 
 void Renderer::setScene_triangles(const rt::CompiledScene& scene) const {
     unsigned numTriangles = scene.m_triangles.size();
+    numTriangles = std::min(numTriangles, m_compileParams.maxTriangleCount);
 
     if (m_compileParams.storageType == SceneStorageType::Uniforms) {
-        numTriangles = std::min(numTriangles, m_compileParams.maxTriangleCount);
 
         TRACE("    Setting scene-triangles uniform");
 
