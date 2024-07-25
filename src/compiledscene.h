@@ -7,7 +7,8 @@
 #include <string>
 
 
-class Renderer;
+// forward declaration
+class Raytracer;
 
 
 namespace rt {
@@ -27,7 +28,7 @@ private:
     std::vector<internal::Triangle> m_triangles;
     PackedMaterialData* m_materialData = nullptr;
 
-    friend class ::Renderer;
+    friend class ::Raytracer;
 };
 
 

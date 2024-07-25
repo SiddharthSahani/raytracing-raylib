@@ -14,6 +14,50 @@ bool changeIndex(unsigned int& index, KeyboardKey key) {
 }
 
 
+ComputeShaderParams getShaderParams() {
+    return {
+        .workgroupSize = 8,
+        .storageType = SceneStorageType::UBO,
+        // .storageType = SceneStorageType::SSBO,
+
+        .maxSphereCount = 16,
+        .maxTriangleCount = 5,
+    };
+}
+
+
+SceneCamera getSceneCamera(Vector2 imageSize) {
+    const Vector3 camPosition = {0, 0, 6};
+    const Vector3 camDirection = {0, 0, -1};
+    const float camFov = 60.0;
+    const SceneCameraParams camParams = {
+        .speed = 10.0,
+    };
+
+    return SceneCamera(camPosition, camDirection, camFov, imageSize, camParams);
+}
+
+
+std::vector<std::unique_ptr<rt::CompiledScene>> createScenes() {
+    std::vector<std::unique_ptr<rt::CompiledScene>> out;
+    out.push_back(createScene_1());
+    out.push_back(createScene_2());
+    out.push_back(createRandomScene(8, 4));
+    out.push_back(createRandomScene(16, 4));
+    return out;
+}
+
+
+std::vector<rt::Config> createConfigs() {
+    std::vector<rt::Config> out;
+    out.push_back({.numSamples = 1, .bounceLimit = 5});
+    out.push_back({.numSamples = 4, .bounceLimit = 5});
+    out.push_back({.numSamples = 16, .bounceLimit = 5});
+    out.push_back({.numSamples = 32, .bounceLimit = 5});
+    return out;
+}
+
+
 int main(int argc, const char* argv[]) {
     CommandLineOptions options(argc, argv);
     logger::setLogLevel(options.verbose ? logger::LogLevel::TRACE : logger::LogLevel::INFO);
@@ -21,52 +65,24 @@ int main(int argc, const char* argv[]) {
     const float imageWidth = options.windowWidth / options.imageScale;
     const float imageHeight = options.windowHeight / options.imageScale;
 
-    Renderer renderer({options.windowWidth, options.windowHeight}, {imageWidth, imageHeight});
+    Renderer renderer({options.windowWidth, options.windowHeight});
 
-    CompileShaderParams params = {
-        .workgroupSize = 8,
-        .storageType = SceneStorageType::Uniforms,
-        // .storageType = SceneStorageType::Buffers,
+    ComputeShaderParams params = getShaderParams();
+    std::shared_ptr raytracer = std::make_shared<Raytracer>(Vector2{imageWidth, imageHeight}, params);
+    renderer.setRaytracer(raytracer);
 
-        .maxSphereCount = 16,
-        .maxTriangleCount = 5,
-    };
+    SceneCamera camera = getSceneCamera({imageWidth, imageHeight});
 
-    renderer.compileComputeShader(params);
-
-    Vector3 camPosition = {0, 0, 6};
-    Vector3 camDirection = {0, 0, -1};
-    float camFov = 60.0;
-    SceneCameraParams camParams = {
-        .speed = 10.0,
-    };
-
-    SceneCamera camera(camPosition, camDirection, camFov, {imageWidth, imageHeight}, camParams);
-
-    const rt::CompiledScene scenes[] = {
-        createScene_1(),
-        createScene_2(),
-        createRandomScene(8, 4),
-        createRandomScene(16, 4),
-    };
-    const int numScenes = sizeof(scenes) / sizeof(rt::CompiledScene);
-
-    const rt::Config configs[] = {
-        {.numSamples = 1, .bounceLimit = 5},
-        {.numSamples = 4, .bounceLimit = 5},
-        {.numSamples = 16, .bounceLimit = 5},
-        {.numSamples = 32, .bounceLimit = 5},
-    };
-    const int numConfigs = sizeof(configs) / sizeof(rt::Config);
+    const std::vector scenes = createScenes();
+    const std::vector configs = createConfigs();
 
     unsigned sceneIdx = 0;
     unsigned configIdx = 2;
     bool benchmarkMode = false;
-    bool debugDraw = false;
 
-    renderer.setCamera(camera);
-    renderer.setScene(scenes[sceneIdx]);
-    renderer.setConfig(configs[configIdx]);
+    raytracer->setCamera(camera.get());
+    raytracer->setScene(*scenes[sceneIdx].get());
+    raytracer->setConfig(configs[configIdx]);
 
     while (!WindowShouldClose()) {
         if (IsKeyPressed(KEY_B)) {
@@ -77,30 +93,28 @@ int main(int argc, const char* argv[]) {
                 SetTargetFPS(30);
             }
         }
-        if (IsKeyPressed(KEY_D)) {
-            debugDraw = !debugDraw;
-        }
 
         if (camera.update(GetFrameTime())) {
-            renderer.setCamera(camera);
-            renderer.resetImage();
+            raytracer->setCamera(camera.get());
+            raytracer->reset();
         }
 
         if (changeIndex(sceneIdx, KEY_S)) {
-            const rt::CompiledScene& scene = scenes[sceneIdx % numScenes];
-            renderer.setScene(scene);
-            renderer.resetImage();
+            const rt::CompiledScene& scene = *scenes[sceneIdx % scenes.size()];
+            raytracer->setScene(scene);
+            raytracer->reset();
         }
 
         if (changeIndex(configIdx, KEY_C)) {
-            const rt::Config& config = configs[configIdx % numConfigs];
-            renderer.setConfig(config);
+            const rt::Config& config = configs[configIdx % configs.size()];
+            raytracer->setConfig(config);
         }
 
         if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S)) {
-            renderer.saveImage("output.png");
+            raytracer->saveImage("output.png");
         }
 
-        renderer.render(true, true, debugDraw);
+        renderer.render();
+        renderer.draw();
     }
 }

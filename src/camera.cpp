@@ -37,30 +37,35 @@ bool SceneCamera::update(float timestep) {
     const Vector3 rightDirection = Vector3CrossProduct(m_direction, upDirection);
     const float camSpeed = m_params.speed * timestep * (IsKeyDown(KEY_LEFT_SHIFT) ? 5 : 1);
 
+    Vector3 posDelta = {0, 0, 0};
+
     if (IsKeyDown(KEY_W)) {
-        m_camera.position = Vector3Add(m_camera.position, Vector3Scale(m_direction, camSpeed));
+        posDelta = Vector3Scale(m_direction, camSpeed);
         cameraUpdated = true;
     }
     if (IsKeyDown(KEY_S)) {
-        m_camera.position = Vector3Subtract(m_camera.position, Vector3Scale(m_direction, camSpeed));
+        posDelta = Vector3Negate(Vector3Scale(m_direction, camSpeed));
         cameraUpdated = true;
     }
     if (IsKeyDown(KEY_A)) {
-        m_camera.position =
-            Vector3Subtract(m_camera.position, Vector3Scale(rightDirection, camSpeed));
+        posDelta = Vector3Negate(Vector3Scale(rightDirection, camSpeed));
         cameraUpdated = true;
     }
     if (IsKeyDown(KEY_D)) {
-        m_camera.position = Vector3Add(m_camera.position, Vector3Scale(rightDirection, camSpeed));
+        posDelta = Vector3Scale(rightDirection, camSpeed);
         cameraUpdated = true;
     }
     if (IsKeyDown(KEY_Q)) {
-        m_camera.position = Vector3Subtract(m_camera.position, Vector3Scale(upDirection, camSpeed));
+        posDelta = Vector3Negate(Vector3Scale(upDirection, camSpeed));
         cameraUpdated = true;
     }
     if (IsKeyDown(KEY_E)) {
-        m_camera.position = Vector3Add(m_camera.position, Vector3Scale(upDirection, camSpeed));
+        posDelta = Vector3Scale(upDirection, camSpeed);
         cameraUpdated = true;
+    }
+
+    if (cameraUpdated) {
+        m_camera.position = Vector3Add(m_camera.position, posDelta);
     }
 
     // mouse movement

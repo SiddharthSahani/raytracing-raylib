@@ -1,64 +1,21 @@
 
 #pragma once
 
-#include "src/camera.h"
-#include "src/compiledscene.h"
-#include "src/structs/config.h"
-
-
-enum class SceneStorageType {
-    Uniforms,
-    Buffers,
-};
-
-
-struct CompileShaderParams {
-    unsigned workgroupSize;
-    SceneStorageType storageType;
-    unsigned maxSphereCount;
-    unsigned maxTriangleCount;
-};
+#include "src/raytracer.h"
 
 
 class Renderer {
 
 public:
-    Renderer(Vector2 windowSize, Vector2 imageSize);
+    Renderer(Vector2 windowSize);
+    void setRaytracer(std::weak_ptr<Raytracer> raytracer);
     ~Renderer();
-    void render(bool compute = true, bool draw = true, bool drawDebug = false);
-    void compileComputeShader(CompileShaderParams params);
-    void resetImage();
-    bool saveImage(const char* fileName) const;
-
-    void setCamera(const SceneCamera& camera) const;
-    void setScene(const rt::CompiledScene& scene) const;
-    void setConfig(const rt::Config& config) const;
-
-    unsigned getComputeShaderId() const { return m_computeShaderProgram; }
-
-private:
-    template <class... Args> int getUniformLoc(const char* fmt, Args... args) const;
-    void runComputeShader();
-    void drawOutImage() const;
-    void drawDebugDisplay() const;
-    void makeOutImage();
-    void makeBufferObjects();
-    void setScene_spheres(const rt::CompiledScene& scene) const;
-    void setScene_triangles(const rt::CompiledScene& scene) const;
+    void render();
+    void draw();
 
 private:
     Vector2 m_windowSize;
-    Vector2 m_imageSize;
-    Texture m_outImage;
+    std::weak_ptr<Raytracer> m_raytracer;
 
-    int m_frameIndex = 0;
-    unsigned m_computeShaderProgram = 0;
-    CompileShaderParams m_compileParams;
-    bool m_compiled = false;
-
-    mutable const rt::CompiledScene* m_currentScene = nullptr;
-    mutable const rt::Config* m_currentConfig = nullptr;
-
-    unsigned m_sceneSpheresBuffer = 0;
-    unsigned m_sceneTrianglesBuffer = 0;
+    Texture m_blankTexture;
 };

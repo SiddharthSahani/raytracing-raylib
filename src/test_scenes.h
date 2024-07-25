@@ -4,7 +4,7 @@
 #include "src/compiledscene.h"
 
 
-rt::CompiledScene createRandomScene(int numSpheres, int numMats) {
+std::unique_ptr<rt::CompiledScene> createRandomScene(int numSpheres, int numMats) {
     SetRandomSeed(0);
 
     rt::Scene scene;
@@ -44,11 +44,11 @@ rt::CompiledScene createRandomScene(int numSpheres, int numMats) {
 
     scene.backgroundColor = {210, 210, 240, 255};
 
-    return rt::CompiledScene(scene, {2048, 2048});
+    return std::make_unique<rt::CompiledScene>(scene, Vector2{2048, 2048});
 }
 
 
-rt::CompiledScene createScene_1() {
+std::unique_ptr<rt::CompiledScene> createScene_1() {
 
     rt::Scene scene;
 
@@ -102,11 +102,11 @@ rt::CompiledScene createScene_1() {
 
     scene.backgroundColor = {200, 200, 200, 255};
 
-    return rt::CompiledScene(scene, {4096, 4096});
+    return std::make_unique<rt::CompiledScene>(scene, Vector2{4096, 4096});
 }
 
 
-rt::CompiledScene createScene_2() {
+std::unique_ptr<rt::CompiledScene> createScene_2() {
 
     rt::Scene scene;
 
@@ -116,7 +116,7 @@ rt::CompiledScene createScene_2() {
     auto emissiveMat = std::make_shared<rt::Material>();
     auto mirrorMat = std::make_shared<rt::Material>();
 
-    purpleMat->setAlbedo({.value = {1.0, 0.0, 1.0}, .deviation = 0.1});
+    purpleMat->setAlbedo({.value = {1.0, 0.0, 1.0}, .deviation = 0.06});
 
     blueMat->setAlbedo({.value = {0.2, 0.3, 1.0}, .deviation = 0.0});
 
@@ -172,5 +172,5 @@ rt::CompiledScene createScene_2() {
 
     scene.backgroundColor = {200, 200, 200, 255};
 
-    return rt::CompiledScene(scene, {4096, 4096});
+    return std::make_unique<rt::CompiledScene>(scene, Vector2{4096, 4096});
 }
