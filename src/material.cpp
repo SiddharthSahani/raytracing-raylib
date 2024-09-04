@@ -39,32 +39,62 @@ Material::~Material() {
 
 
 void Material::setAlbedo(RGB_ChannelInfo info) {
+    if (Image* img = std::get_if<Image>(&m_albedoData)) {
+        UnloadImage(*img);
+        img->data = nullptr;
+    }
+
     m_albedoData = info;
 }
 
 
 void Material::setAlbedo(const char* fileName) {
+    if (Image* img = std::get_if<Image>(&m_albedoData)) {
+        UnloadImage(*img);
+        img->data = nullptr;
+    }
+
     setAlbedo(LoadImage(fileName));
 }
 
 
 void Material::setAlbedo(Image image) {
+    if (Image* img = std::get_if<Image>(&m_albedoData)) {
+        UnloadImage(*img);
+        img->data = nullptr;
+    }
+
     ImageFormat(&image, PIXELFORMAT_UNCOMPRESSED_R8G8B8);
     m_albedoData = image;
 }
 
 
 void Material::setRoughness(A_ChannelInfo info) {
+    if (Image* img = std::get_if<Image>(&m_roughnessData)) {
+        UnloadImage(*img);
+        img->data = nullptr;
+    }
+
     m_roughnessData = info;
 }
 
 
 void Material::setRoughness(const char* fileName) {
+    if (Image* img = std::get_if<Image>(&m_roughnessData)) {
+        UnloadImage(*img);
+        img->data = nullptr;
+    }
+
     setRoughness(LoadImage(fileName));
 }
 
 
 void Material::setRoughness(Image image) {
+    if (Image* img = std::get_if<Image>(&m_roughnessData)) {
+        UnloadImage(*img);
+        img->data = nullptr;
+    }
+
     ImageFormat(&image, PIXELFORMAT_UNCOMPRESSED_GRAYSCALE);
     m_roughnessData = image;
 }
