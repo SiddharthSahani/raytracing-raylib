@@ -17,11 +17,14 @@ Renderer::Renderer(Vector2 windowSize)
     Image img = GenImageChecked(4, 4, 1, 1, PINK, BLACK);
     m_blankTexture = LoadTextureFromImage(img);
     UnloadImage(img);
+
+    m_texFragShader = LoadShader(nullptr, "shaders/texFrag.glsl");
 }
 
 
 Renderer::~Renderer() {
     UnloadTexture(m_blankTexture);
+    UnloadShader(m_texFragShader);
     CloseWindow();
     INFO("Closed window");
 }
@@ -49,7 +52,15 @@ void Renderer::draw() {
         const Vector2 texSize = raytracer->getTextureSize();
         const Rectangle srcRect = {0, 0, texSize.x, texSize.y};
         const Rectangle destRect = {0, 0, m_windowSize.x, m_windowSize.y};
+
+        BeginShaderMode(m_texFragShader);
+        static int gamma_uniLoc = GetShaderLocation(m_texFragShader, "gamma");
+        const float gamma = 2.2f;
+
+        SetShaderValue(m_texFragShader, gamma_uniLoc, &gamma, SHADER_UNIFORM_FLOAT);
+
         DrawTexturePro(outTexture, srcRect, destRect, {0, 0}, 0, WHITE);
+        EndShaderMode();
     }
 
     DrawFPS(10, 10);

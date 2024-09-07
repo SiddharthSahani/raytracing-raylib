@@ -18,4 +18,5 @@ private:
     std::weak_ptr<Raytracer> m_raytracer;
 
     Texture m_blankTexture;
+    Shader m_texFragShader;
 };
