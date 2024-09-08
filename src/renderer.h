@@ -10,6 +10,7 @@ public:
     Renderer(Vector2 windowSize);
     void setRaytracer(std::weak_ptr<Raytracer> raytracer);
     ~Renderer();
+    void setGamma(float gamma);
     void render();
     void draw();
 

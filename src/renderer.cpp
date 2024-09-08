@@ -19,6 +19,9 @@ Renderer::Renderer(Vector2 windowSize)
     UnloadImage(img);
 
     m_texFragShader = LoadShader(nullptr, "shaders/texFrag.glsl");
+    SetShaderValue(m_texFragShader, GetShaderLocation(m_texFragShader, "windowSize"), &m_windowSize, SHADER_UNIFORM_VEC2);
+    const float gamma = 2.2f;
+    SetShaderValue(m_texFragShader, GetShaderLocation(m_texFragShader, "gamma"), &gamma, SHADER_UNIFORM_FLOAT);
 }
 
 
@@ -32,6 +35,13 @@ Renderer::~Renderer() {
 
 void Renderer::setRaytracer(std::weak_ptr<Raytracer> raytracer) {
     m_raytracer = raytracer;
+}
+
+
+void Renderer::setGamma(float gamma) {
+    static int gamma_uniLoc = GetShaderLocation(m_texFragShader, "gamma");
+
+    SetShaderValue(m_texFragShader, gamma_uniLoc, &gamma, SHADER_UNIFORM_FLOAT);
 }
 
 
@@ -54,11 +64,6 @@ void Renderer::draw() {
         const Rectangle destRect = {0, 0, m_windowSize.x, m_windowSize.y};
 
         BeginShaderMode(m_texFragShader);
-        static int gamma_uniLoc = GetShaderLocation(m_texFragShader, "gamma");
-        const float gamma = 2.2f;
-
-        SetShaderValue(m_texFragShader, gamma_uniLoc, &gamma, SHADER_UNIFORM_FLOAT);
-
         DrawTexturePro(outTexture, srcRect, destRect, {0, 0}, 0, WHITE);
         EndShaderMode();
     }

@@ -114,6 +114,10 @@ int main(int argc, const char* argv[]) {
             raytracer->saveImage("output.png");
         }
 
+        if (IsKeyDown(KEY_M)) {
+            renderer.setGamma(1.0);
+        }
+
         renderer.render();
         renderer.draw();
     }

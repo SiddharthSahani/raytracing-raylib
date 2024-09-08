@@ -3,11 +3,12 @@
 
 
 uniform sampler2D texture0;
+uniform vec2 windowSize;
 uniform float gamma;
 
 
 void main() {
-    vec2 uv = gl_FragCoord.xy / vec2(1280, 720);
+    vec2 uv = gl_FragCoord.xy / windowSize;
     uv.y = 1.0f - uv.y;
 
     vec4 color = texture(texture0, uv);
