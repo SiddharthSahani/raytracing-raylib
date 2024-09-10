@@ -4,7 +4,7 @@
 
 
 SceneCamera::SceneCamera(Vector3 position, Vector3 direction, float fov, Vector2 imgSize, SceneCameraParams params)
-    : m_direction(direction), m_params(params), m_fov(fov) {
+    : m_direction(direction), m_params(params) {
     m_camera.position = position;
 
     Matrix projMat = MatrixPerspective(fov * DEG2RAD, imgSize.x / imgSize.y, 0.1, 100.0);

@@ -20,7 +20,6 @@ public:
 
 private:
     Vector3 m_direction;
-    float m_fov;
     rt::Camera m_camera;
     SceneCameraParams m_params;
 };
