@@ -110,6 +110,14 @@ int main(int argc, const char* argv[]) {
             raytracer->setConfig(config);
         }
 
+        if (IsKeyDown(KEY_SPACE) && GetMouseWheelMove() != 0) {
+            static float fov = 60.0f;
+            fov += GetMouseWheelMove();
+            camera.updateProjMatrix({imageWidth, imageHeight}, fov);
+            raytracer->setCamera(camera.get());
+            raytracer->reset();
+        }
+
         if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S)) {
             raytracer->saveImage("output.png");
         }

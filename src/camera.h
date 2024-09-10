@@ -16,6 +16,8 @@ class SceneCamera {
 public:
     SceneCamera(Vector3 position, Vector3 direction, float fov, Vector2 imgSize, SceneCameraParams params);
     bool update(float dt);
+    void updateProjMatrix(Vector2 imgSize, float fov);
+    SceneCameraParams& getParams() { return m_params; }
     const rt::Camera& get() const { return m_camera; }
 
 private:
