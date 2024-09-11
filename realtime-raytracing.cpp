@@ -126,6 +126,10 @@ int main(int argc, const char* argv[]) {
             renderer.setGamma(1.0);
         }
 
+        if (IsWindowResized()) {
+            renderer.resize();
+        }
+
         renderer.render();
         renderer.draw();
     }

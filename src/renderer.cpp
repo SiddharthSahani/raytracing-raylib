@@ -7,6 +7,7 @@ Renderer::Renderer(Vector2 windowSize)
     : m_windowSize(windowSize) {
 
     SetTraceLogLevel(LOG_WARNING);
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(windowSize.x, windowSize.y, "Raytracing");
     SetTargetFPS(30);
 
@@ -70,4 +71,10 @@ void Renderer::draw() {
 
     DrawFPS(10, 10);
     EndDrawing();
+}
+
+
+void Renderer::resize() {
+    m_windowSize = {(float) GetScreenWidth(), (float) GetScreenHeight()};
+    SetShaderValue(m_texFragShader, GetShaderLocation(m_texFragShader, "windowSize"), &m_windowSize, SHADER_UNIFORM_VEC2);
 }
