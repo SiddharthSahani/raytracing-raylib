@@ -67,6 +67,8 @@ void Renderer::draw() {
         BeginShaderMode(m_texFragShader);
         DrawTexturePro(outTexture, srcRect, destRect, {0, 0}, 0, WHITE);
         EndShaderMode();
+
+        DrawText(TextFormat("Frame Index: %d", raytracer->getFrameIndex()), 10, 30, 18, BLACK);
     }
 
     DrawFPS(10, 10);

@@ -25,7 +25,8 @@ class Raytracer {
 public:
     Raytracer(Vector2 textureSize, const ComputeShaderParams& shaderParams);
     ~Raytracer();
-    Vector2 getTextureSize() const { return m_textureSize; }
+    const Vector2& getTextureSize() const { return m_textureSize; }
+    int getFrameIndex() const { return m_frameIndex; }
     void setCamera(const rt::Camera& camera);
     void setScene(const rt::CompiledScene& scene);
     void setConfig(const rt::Config& config);
