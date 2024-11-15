@@ -1,26 +1,39 @@
 
+CXX = g++
 CXXFLAGS = -O1
-DEFINES  = 
-INCLUDES = -I . -I external/
-LDFLAGS  = -L external/raylib -lraylib -lgdi32 -lwinmm
+DEFINES =
+CPPFLAGS = -I . -I external/
+LDFLAGS = -L external/raylib
+LDLIBS = -lraylib -lgdi32 -lwinmm
 
-SOURCES = $(wildcard src/*.cpp)
-OBJECTS = $(SOURCES:.cpp=.o)
+SRC_DIR = src
+BUILD_DIR = build
 
-REALTIME_TARGET = realtime-raytracing.exe
-
-
-realtime: $(REALTIME_TARGET)
-
-
-$(REALTIME_TARGET): realtime-raytracing.cpp $(OBJECTS)
-	g++ -o $(REALTIME_TARGET) $^ $(CXXFLAGS) $(DEFINES) $(INCLUDES) $(LDFLAGS)
+SOURCES = $(wildcard $(SRC_DIR)/*.cpp)
+OBJECTS = $(patsubst $(SRC_DIR)/%.cpp, $(BUILD_DIR)/%.o, $(SOURCES))
+TARGET = realtime-raytracing.exe
 
 
-%.o: %.cpp
-	g++ -o $@ -c $< $(CXXFLAGS) $(DEFINES) $(INCLUDES)
+# logging for debug purpose
+$(info SOURCES: $(SOURCES))
+$(info OBJECTS: $(OBJECTS))
+
+
+all: $(TARGET)
+
+
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
+
+
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(BUILD_DIR)
+	$(CXX) -o $@ -c $< $(CXXFLAGS) $(CPPFLAGS) $(DEFINES) $(INCLUDES)
+
+
+$(TARGET): $(OBJECTS)
+	$(CXX) -o $(TARGET) $^ $(CXXFLAGS) $(LDFLAGS) $(LDLIBS)
 
 
 clean:
-	rm -f $(wildcard src/*.o)
-	rm -f $(REALTIME_TARGET)
+	rm -rf $(BUILD_DIR)
+	rm -f $(TARGET)
