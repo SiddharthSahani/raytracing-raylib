@@ -1,8 +1,12 @@
 
+# vscode configs
 .vscode
 
+# dependencies
 external
 
+# executable
 *.exe
 
-*.o
+# intermediate files
+build/
