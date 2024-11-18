@@ -13,6 +13,8 @@ uniform vec2 useTextures;
 uniform sampler2D uTextureRGB;
 uniform sampler2D uTextureA;
 
+out vec4 fragColor;
+
 
 uint nextRandom(inout uint state) {
     state = state * 747796405u + 2891336453u;
@@ -71,5 +73,5 @@ void main() {
     }
 
     color = clamp(color, 0.0, 1.0);
-    gl_FragColor = color;
+    fragColor = color;
 }
