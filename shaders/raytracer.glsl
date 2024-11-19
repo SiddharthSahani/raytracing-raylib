@@ -142,7 +142,7 @@ vec3 randomDirection(inout uint state) {
 
 // ----- INTERSECTION FUNCTIONS -----
 
-bool hit(Sphere sphere, Ray ray, out HitRecord record) {
+bool hit(Sphere sphere, Ray ray, inout HitRecord record) {
     vec3 oc = ray.origin - sphere.position;
     float a = dot(ray.direction, ray.direction);
     float b = 2.0 * dot(oc, ray.direction);
@@ -172,7 +172,7 @@ bool hit(Sphere sphere, Ray ray, out HitRecord record) {
 }
 
 
-bool hit(Triangle triangle, Ray ray, out HitRecord record) {
+bool hit(Triangle triangle, Ray ray, inout HitRecord record) {
     vec3 v0v1 = triangle.v1 - triangle.v0;
     vec3 v0v2 = triangle.v2 - triangle.v0;
     vec3 pvec = cross(ray.direction, v0v2);
