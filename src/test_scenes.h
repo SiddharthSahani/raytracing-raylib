@@ -57,8 +57,8 @@ std::unique_ptr<rt::CompiledScene> createScene_1() {
     auto redMat = std::make_shared<rt::Material>();
     auto mirrorMat = std::make_shared<rt::Material>();
 
-    sphereMat->setAlbedo({.value = {0.2, 0.9, 0.8}, .deviation = 0.03});
-    // sphereMat->setAlbedo("earthmap1k.png");
+    // sphereMat->setAlbedo({.value = {0.2, 0.9, 0.8}, .deviation = 0.03});
+    sphereMat->setAlbedo("earth-albedo-tex.png");
 
     redMat->setAlbedo({.value = {0.8, 0.3, 0.3}, .deviation = 0.1});
 
