@@ -2,7 +2,7 @@
 #include "src/camera.h"
 #include "src/logger.h"
 #include "src/renderer.h"
-#include "src/test_scenes.h"
+#include "src/test-scenes.h"
 #include "src/cli.h"
 
 

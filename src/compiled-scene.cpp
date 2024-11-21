@@ -1,5 +1,5 @@
 
-#include "src/compiledscene.h"
+#include "src/compiled-scene.h"
 #include "src/logger.h"
 #include <algorithm>
 #include <map>

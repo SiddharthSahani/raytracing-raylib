@@ -23,15 +23,15 @@ See the features section for more details.
 - `src/`: source code
     - `camera`: responsible for camera movement and projection matrix
     - `cli`: command line argument parser
-    - `compiledscene`: packs scene data into proper format for raytracing
+    - `compiled-scene`: packs scene data into proper format for raytracing
     - `hittable`: converts objects into gpu format
     - `logger`: simple logger utility
     - `material`: holds material data
-    - `packedmaterialdata`: combines the materials into a single texture
+    - `packed-materialdata`: combines the materials into a single texture
     - `raytacer`: responsible for communicating with the gpu
     - `renderer`: responsible for rendering the final output
 - `shaders/`: shaders
-    - `packedmaterialgen`: generates the packed material texture for a scene
+    - `packed-material-sgen`: generates the packed material texture for a scene
     - `raytracer`: compute shader that does the raytracing
     - `texFrag`: fragment shader for the rendering the final output
 

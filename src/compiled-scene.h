@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "src/packedmaterialdata.h"
+#include "src/packed-materialdata.h"
 #include "src/scene.h"
 #include "src/structs/objects.h"
 #include <string>

@@ -1,7 +1,5 @@
 
-#pragma once
-
-#include "src/compiledscene.h"
+#include "src/test-scenes.h"
 
 
 std::unique_ptr<rt::CompiledScene> createRandomScene(int numSpheres, int numMats) {

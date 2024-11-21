@@ -1,5 +1,5 @@
 
-#include "src/packedmaterialdata.h"
+#include "src/packed-materialdata.h"
 #include "src/logger.h"
 
 
@@ -88,7 +88,7 @@ void PackedMaterialData::createFrameBuffer() {
 
 
 void PackedMaterialData::createShader() {
-    m_shader = LoadShader(nullptr, "shaders/packedmaterialgen.glsl");
+    m_shader = LoadShader(nullptr, "shaders/packed-material-gen.glsl");
 }
 
 

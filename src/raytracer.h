@@ -2,7 +2,7 @@
 #pragma once
 
 #include "src/structs/camera.h"
-#include "src/compiledscene.h"
+#include "src/compiled-scene.h"
 #include "src/structs/config.h"
 
 
