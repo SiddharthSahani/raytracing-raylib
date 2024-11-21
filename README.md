@@ -19,6 +19,32 @@ See the features section for more details.
 - Check the cli usage by passing `--help` as an argument to the executable.
 
 
+### Controls
+
+#### Camera
+- Movement is only possible when `Right Mouse Button` is pressed.
+- `WASD + QE` movement keys.
+- `Spacebar + Mouse Wheel` for changing FOV.
+
+#### Window
+- `B` for toggling benchmark mode (uncapped FPS).
+- `S + Left/Right Arrow` to change the scene.
+- `C + Left/Right Arrow` to change the config (number of samples per frame).
+- `Left Control + S` to save the rendered image as `output.png`.
+
+#### Command Line
+- `-w` or `--window-width` to set the window width (default: 1280).
+- `-h` or `--window-height` to set the window height (default: 720).
+- `-s` or `--image-scale` to set the image scale (default: 2.0).
+- `--verbose` to enable verbose logging (default: false).
+
+eg: Running the executable with the following command will run the program with in verbose mode and with a window size of 1600x900 with a scale of 4.0.
+Actual render size will be 1600x900 / 4.0 = 225.
+```bash
+./realtime-raytracing -w 1600 -h 900 -s 4.0 --verbose 
+```
+
+
 ### Project Structure
 - `src/`: source code
     - `camera`: responsible for camera movement and projection matrix
