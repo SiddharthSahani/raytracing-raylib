@@ -83,6 +83,7 @@ int main(int argc, const char* argv[]) {
     raytracer->setCamera(camera.get());
     raytracer->setScene(*scenes[sceneIdx].get());
     raytracer->setConfig(configs[configIdx]);
+    renderer.setGamma(1.0);
 
     while (!WindowShouldClose()) {
         if (IsKeyPressed(KEY_B)) {
@@ -122,9 +123,9 @@ int main(int argc, const char* argv[]) {
             raytracer->saveImage("output.png");
         }
 
-        if (IsKeyDown(KEY_M)) {
-            renderer.setGamma(1.0);
-        }
+        // if (IsKeyDown(KEY_M)) {
+        //     renderer.setGamma(1.0);
+        // }
 
         if (IsWindowResized()) {
             renderer.resize();
